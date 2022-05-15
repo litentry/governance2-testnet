@@ -2,6 +2,6 @@
 Set up a testnet for new substrate governance model
 
 
-# Communication
+## Communication
 
 * [Element](https://matrix.to/#/!FdMRQTDnoYtEPkbHAK:matrix.org?via=matrix.org)
