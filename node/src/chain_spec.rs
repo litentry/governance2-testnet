@@ -156,5 +156,6 @@ fn testnet_genesis(
 		democracy: Default::default(),
 		council: Default::default(),
 		technical_committee: Default::default(),
+		phragmen_election: Default::default(),
 	}
 }

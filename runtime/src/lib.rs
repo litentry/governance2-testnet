@@ -23,6 +23,7 @@ use sp_runtime::{
 // 	prod_or_fast, slots, BlockHashCount, BlockLength, CurrencyToVote, SlowAdjustingFeeUpdate,
 // };
 
+
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -31,7 +32,7 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, LockIdentifier},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
@@ -46,7 +47,7 @@ pub use pallet_staking::Call as StakingCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Perbill, Permill};
+pub use sp_runtime::{Perbill, Permill, Percent};
 
 use frame_system::EnsureRoot;
 
@@ -608,6 +609,83 @@ impl pallet_democracy::Config for Runtime {
 	type MaxProposals = MaxProposals;
 }
 
+parameter_types! {
+	pub const TipCountdown: BlockNumber = 1 * DAYS;
+	pub const TipFindersFee: Percent = Percent::from_percent(20);
+	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
+}
+impl pallet_tips::Config for Runtime {
+	type Event = Event;
+	type DataDepositPerByte = DataDepositPerByte;
+	type MaximumReasonLength = MaximumReasonLength;
+	type Tippers = PhragmenElection;
+	type TipCountdown = TipCountdown;
+	type TipFindersFee = TipFindersFee;
+	type TipReportDepositBase = TipReportDepositBase;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const CandidacyBond: Balance = 100 * DOLLARS;
+	// 1 storage item created, key size is 32 bytes, value size is 16+16.
+	// pub const VotingBondBase: Balance = deposit(1, 64);
+	pub const VotingBondBase: Balance = 1;
+	// additional data per vote is 32 bytes (account id).
+	// pub const VotingBondFactor: Balance = deposit(0, 32);
+	pub const VotingBondFactor: Balance = 2;
+	/// Weekly council elections; scaling up to monthly eventually.
+	pub TermDuration: BlockNumber = prod_or_fast!(7 * DAYS, 2 * MINUTES, "DOT_TERM_DURATION");
+	/// 13 members initially, to be increased to 23 eventually.
+
+	pub const DesiredMembers: u32 = 13;
+	pub const DesiredRunnersUp: u32 = 20;
+	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
+}
+impl pallet_elections_phragmen::Config for Runtime {
+	type Event = Event;
+	type PalletId = PhragmenElectionPalletId;
+	type Currency = Balances;
+	type ChangeMembers = Council;
+	type InitializeMembers = Council;
+	type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+	type CandidacyBond = CandidacyBond;
+	type VotingBondBase = VotingBondBase;
+	type VotingBondFactor = VotingBondFactor;
+	type LoserCandidate = Treasury;
+	type KickedMember = Treasury;
+	type DesiredMembers = DesiredMembers;
+	type DesiredRunnersUp = DesiredRunnersUp;
+	type TermDuration = TermDuration;
+	// type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
+	type WeightInfo = ();
+}
+
+
+// parameter_types! {
+// 	// The average auction is 7 days long, so this will be 70% for ending period.
+// 	// 5 Days = 72000 Blocks @ 6 sec per block
+// 	pub const EndingPeriod: BlockNumber = 5 * DAYS;
+// 	// ~ 1000 samples per day -> ~ 20 blocks per sample -> 2 minute samples
+// 	pub const SampleLength: BlockNumber = 2 * MINUTES;
+// }
+
+// type AuctionInitiate = EnsureOneOf<
+// 	EnsureRoot<AccountId>,
+// 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
+// >;
+
+// impl auctions::Config for Runtime {
+// 	type Event = Event;
+// 	type Leaser = Slots;
+// 	type Registrar = Registrar;
+// 	type EndingPeriod = EndingPeriod;
+// 	type SampleLength = SampleLength;
+// 	type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
+// 	type InitiateOrigin = AuctionInitiate;
+// 	type WeightInfo = ();
+// }
+
+
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
@@ -652,14 +730,18 @@ construct_runtime!(
 		// Token related
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
-		Treasury: pallet_treasury,
 		Bounties: pallet_bounties,
+		Tips: pallet_tips,
 		// Staking: pallet_staking,
 		// Governance
 		Democracy: pallet_democracy,
 		Council: pallet_collective::<Instance1>,
 		TechnicalCommittee: pallet_collective::<Instance2>,
+		PhragmenElection: pallet_elections_phragmen,
+		Treasury: pallet_treasury,
 		// Referenda: pallet_referenda,
+
+		// Auctions: auctions,
 
 		Sudo: pallet_sudo,
 	}
