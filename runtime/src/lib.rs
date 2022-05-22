@@ -44,6 +44,19 @@ pub use sp_runtime::{Perbill, Permill};
 
 use frame_system::EnsureRoot;
 
+use frame_support::{
+	// construct_runtime, parameter_types,
+	traits::{Contains, EnsureOneOf, Everything, InstanceFilter},
+	// weights::{
+	// 	constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+	// 	ConstantMultiplier, DispatchClass, IdentityFee, Weight,
+	// },
+	PalletId,
+};
+use sp_runtime::curve::PiecewiseLinear;
+// use sp_staking::SessionIndex;
+
+// use pallet_bounties::Bounties;
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -130,6 +143,11 @@ pub fn native_version() -> NativeVersion {
 }
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+
+pub const UNIT: Balance = 1_000_000_000_000;
+	pub const DOLLARS: Balance = UNIT; // 1_000_000_000_000
+	pub const CENTS: Balance = DOLLARS / 100; // 10_000_000_000
+	pub const MILLICENTS: Balance = CENTS / 1_000; // 10_000_000
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -254,6 +272,188 @@ impl pallet_scheduler::Config for Runtime {
 	type NoPreimagePostponement = ();
 }
 
+parameter_types! {
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const ProposalBondMinimum: Balance = 100 * DOLLARS;
+	pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
+	pub const SpendPeriod: BlockNumber = 24 * DAYS;
+	pub const Burn: Permill = Permill::from_percent(1);
+	pub const DataDepositPerByte: Balance = 1 * CENTS;
+
+	pub const BountyDepositBase: Balance = 1 * DOLLARS;
+	pub const BountyDepositPayoutDelay: BlockNumber = 8 * DAYS;
+	pub const BountyUpdatePeriod: BlockNumber = 90 * DAYS;
+	pub const MaximumReasonLength: u32 = 16384;
+	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
+	pub const CuratorDepositMin: Balance = 10 * DOLLARS;
+	pub const CuratorDepositMax: Balance = 200 * DOLLARS;
+	pub const BountyValueMinimum: Balance = 10 * DOLLARS;
+}
+
+impl pallet_bounties::Config for Runtime {
+	type Event = Event;
+	type BountyDepositBase = BountyDepositBase;
+	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
+	type BountyUpdatePeriod = BountyUpdatePeriod;
+	type CuratorDepositMultiplier = CuratorDepositMultiplier;
+	type CuratorDepositMin = CuratorDepositMin;
+	type CuratorDepositMax = CuratorDepositMax;
+	type BountyValueMinimum = BountyValueMinimum;
+	// type ChildBountyManager = ChildBounties;
+	type ChildBountyManager = ();
+	type DataDepositPerByte = DataDepositPerByte;
+	type MaximumReasonLength = MaximumReasonLength;
+	type WeightInfo = ();
+}
+
+type ApproveOrigin = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	EnsureRoot<AccountId>,
+	// pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 5>,
+>;
+
+type MoreThanHalfCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	EnsureRoot<AccountId>,
+	// pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
+>;
+
+parameter_types! {
+	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+	// pub const ProposalBond: Permill = Permill::from_percent(5);
+	// pub const ProposalBondMinimum: Balance = 100 * DOLLARS;
+	// pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
+	pub const MaxApprovals: u32 = 100;
+}
+impl pallet_treasury::Config for Runtime {
+	type PalletId = TreasuryPalletId;
+	type Currency = Balances;
+	type ApproveOrigin = ApproveOrigin;
+	type RejectOrigin = MoreThanHalfCouncil;
+	type Event = Event;
+	type OnSlash = Treasury;
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMaximum = ProposalBondMaximum;
+	type SpendPeriod = SpendPeriod;
+	type Burn = Burn;
+	type BurnDestination = ();
+	// type SpendFunds = Bounties;
+	type SpendFunds = ();
+	type MaxApprovals = MaxApprovals;
+	// type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
+	type WeightInfo = ();
+}
+
+
+// impl_opaque_keys! {
+// 	pub struct SessionKeys {
+// 		pub grandpa: Grandpa,
+// 		pub babe: Babe,
+// 		pub im_online: ImOnline,
+// 		pub para_validator: Initializer,
+// 		pub para_assignment: ParaSessionInfo,
+// 		pub authority_discovery: AuthorityDiscovery,
+// 	}
+// }
+
+// impl pallet_session::Config for Runtime {
+// 	type Event = Event;
+// 	type ValidatorId = AccountId;
+// 	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+// 	type ShouldEndSession = Babe;
+// 	type NextSessionRotation = Babe;
+// 	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+// 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+// 	type Keys = SessionKeys;
+// 	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
+// }
+
+
+// generate_solution_type!(
+// 	#[compact]
+// 	pub struct NposCompactSolution16::<
+// 		VoterIndex = u32,
+// 		TargetIndex = u16,
+// 		Accuracy = sp_runtime::PerU16,
+// 		MaxVoters = MaxElectingVoters,
+// 	>(16)
+// );
+
+// pub struct OnChainSeqPhragmen;
+// impl onchain::Config for OnChainSeqPhragmen {
+// 	type System = Runtime;
+// 	type Solver = SequentialPhragmen<AccountId, runtime_common::elections::OnChainAccuracy>;
+// 	type DataProvider = Staking;
+// 	type WeightInfo = weights::frame_election_provider_support::WeightInfo<Runtime>;
+// }
+
+// pallet_staking_reward_curve::build! {
+// 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
+// 		min_inflation: 0_025_000,
+// 		max_inflation: 0_100_000,
+// 		// 3:2:1 staked : parachains : float.
+// 		// while there's no parachains, then this is 75% staked : 25% float.
+// 		ideal_stake: 0_750_000,
+// 		falloff: 0_050_000,
+// 		max_piece_count: 40,
+// 		test_precision: 0_005_000,
+// 	);
+// }
+
+// parameter_types! {
+// 	pub const SessionsPerEra: SessionIndex = 6;
+// 	// 28 eras for unbonding (28 days).
+// 	pub const BondingDuration: sp_staking::EraIndex = 28;
+// 	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
+// 	// pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+// 	pub const MaxNominatorRewardedPerValidator: u32 = 256;
+// 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
+// 	// 16
+// 	pub const MaxNominations: u32 = <NposCompactSolution16 as frame_election_provider_support::NposSolution>::LIMIT as u32;
+// }
+
+
+// type SlashCancelOrigin = EnsureOneOf<
+// 	EnsureRoot<AccountId>,
+// 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 4>,
+// >;
+
+// impl pallet_staking::Config for Runtime {
+// 	type MaxNominations = MaxNominations;
+// 	type Currency = Balances;
+// 	type CurrencyBalance = Balance;
+// 	type UnixTime = Timestamp;
+// 	// type CurrencyToVote = CurrencyToVote;
+// 	type CurrencyToVote = ();
+// 	type RewardRemainder = Treasury;
+// 	type Event = Event;
+// 	type Slash = Treasury;
+// 	type Reward = ();
+// 	type SessionsPerEra = SessionsPerEra;
+// 	type BondingDuration = BondingDuration;
+// 	type SlashDeferDuration = SlashDeferDuration;
+// 	// A super-majority of the council can cancel the slash.
+// 	// type SlashCancelOrigin = SlashCancelOrigin;
+// 	type SlashCancelOrigin = ();
+// 	type SessionInterface = Self;
+// 	// type EraPayout = pallet_staking::ConvertCurve<RewardCurve>;
+// 	type EraPayout = ();
+// 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+// 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
+// 	type NextNewSession = Session;
+// 	// type ElectionProvider = ElectionProviderMultiPhase;
+// 	type ElectionProvider = ();
+// 	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+// 	// type VoterList = VoterList;
+// 	type VoterList = ();
+// 	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
+// 	type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
+// 	type OnStakerSlash = ();
+// 	type WeightInfo = ();
+// }
+
+
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
@@ -298,7 +498,8 @@ construct_runtime!(
 		// Token related
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
-		// Treasury: pallet_treasury,
+		Treasury: pallet_treasury,
+		Bounties: pallet_bounties,
 		// Staking: pallet_staking,
 		// Governance
 		// Democracy: pallet_democracy,
@@ -349,7 +550,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_scheduler, Scheduler]
+ 	// [pallet_scheduler, Scheduler]
 	);
 }
 
