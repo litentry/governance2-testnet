@@ -58,7 +58,7 @@ pallet-scheduler = { version = "4.0.0-dev", default-features = false, git = "htt
 pallet-staking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-bounties = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 # pallet-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
-
+pallet-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 
@@ -87,6 +87,7 @@ std = [
 	"pallet-staking/std",
     "pallet-bounties/std",
     # "pallet-session/std",
+    "pallet-collective/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -115,6 +116,7 @@ runtime-benchmarks = [
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-staking/runtime-benchmarks",
     "pallet-bounties/runtime-benchmarks",
+    "pallet-collective/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
 try-runtime = [
@@ -134,4 +136,5 @@ try-runtime = [
 	"pallet-scheduler/try-runtime",
 	"pallet-staking/try-runtime",
     "pallet-bounties/try-runtime",
+    "pallet-collective/try-runtime",
 ]

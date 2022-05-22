@@ -153,6 +153,8 @@ fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
-		// democracy: Default::default(),
+		democracy: Default::default(),
+		council: Default::default(),
+		technical_committee: Default::default(),
 	}
 }

@@ -18,6 +18,11 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
+// use runtime_common::{
+// 	auctions, claims, crowdloan, impl_runtime_weights, impls::DealWithFees, paras_registrar,
+// 	prod_or_fast, slots, BlockHashCount, BlockLength, CurrencyToVote, SlowAdjustingFeeUpdate,
+// };
+
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -37,6 +42,7 @@ pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 pub use pallet_scheduler::Call as SchedulerCall;
+pub use pallet_staking::Call as StakingCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -59,6 +65,7 @@ use sp_runtime::curve::PiecewiseLinear;
 // use pallet_bounties::Bounties;
 /// An index to a block.
 pub type BlockNumber = u32;
+pub type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -401,58 +408,205 @@ impl pallet_treasury::Config for Runtime {
 // 	);
 // }
 
-// parameter_types! {
-// 	pub const SessionsPerEra: SessionIndex = 6;
-// 	// 28 eras for unbonding (28 days).
-// 	pub const BondingDuration: sp_staking::EraIndex = 28;
-// 	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
-// 	// pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
-// 	pub const MaxNominatorRewardedPerValidator: u32 = 256;
-// 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
-// 	// 16
-// 	pub const MaxNominations: u32 = <NposCompactSolution16 as frame_election_provider_support::NposSolution>::LIMIT as u32;
-// }
+parameter_types! {
+	// pub const SessionsPerEra: SessionIndex = 6;
+	// 28 eras for unbonding (28 days).
+	pub const BondingDuration: sp_staking::EraIndex = 28;
+	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
+	// pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+	pub const MaxNominatorRewardedPerValidator: u32 = 256;
+	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
+	// 16
+	// <NposCompactSolution16 as frame_election_provider_support::NposSolution>::LIMIT as u32;
+	pub const MaxNominations: u32 = 16;
+}
 
 
-// type SlashCancelOrigin = EnsureOneOf<
-// 	EnsureRoot<AccountId>,
-// 	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 4>,
-// >;
+type SlashCancelOrigin = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	EnsureRoot<AccountId>,
+	// pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 4>,
+>;
+
+pub struct StakingBenchmarkingConfig;
+impl pallet_staking::BenchmarkingConfig for StakingBenchmarkingConfig {
+	type MaxValidators = ConstU32<1000>;
+	type MaxNominators = ConstU32<1000>;
+}
 
 // impl pallet_staking::Config for Runtime {
 // 	type MaxNominations = MaxNominations;
 // 	type Currency = Balances;
 // 	type CurrencyBalance = Balance;
 // 	type UnixTime = Timestamp;
-// 	// type CurrencyToVote = CurrencyToVote;
-// 	type CurrencyToVote = ();
+// 	type CurrencyToVote = CurrencyToVote;
 // 	type RewardRemainder = Treasury;
 // 	type Event = Event;
 // 	type Slash = Treasury;
 // 	type Reward = ();
-// 	type SessionsPerEra = SessionsPerEra;
+// 	// type SessionsPerEra = SessionsPerEra;
+// 	type SessionsPerEra = ();
 // 	type BondingDuration = BondingDuration;
 // 	type SlashDeferDuration = SlashDeferDuration;
 // 	// A super-majority of the council can cancel the slash.
-// 	// type SlashCancelOrigin = SlashCancelOrigin;
-// 	type SlashCancelOrigin = ();
+// 	type SlashCancelOrigin = SlashCancelOrigin;
 // 	type SessionInterface = Self;
 // 	// type EraPayout = pallet_staking::ConvertCurve<RewardCurve>;
 // 	type EraPayout = ();
 // 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 // 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
-// 	type NextNewSession = Session;
+// 	// type NextNewSession = Session;
+// 	type NextNewSession = ();
 // 	// type ElectionProvider = ElectionProviderMultiPhase;
 // 	type ElectionProvider = ();
-// 	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+// 	type GenesisElectionProvider = ();
 // 	// type VoterList = VoterList;
 // 	type VoterList = ();
 // 	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
-// 	type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
+// 	// type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
+// 	type BenchmarkingConfig = ();
 // 	type OnStakerSlash = ();
 // 	type WeightInfo = ();
 // }
 
+#[macro_export]
+macro_rules! prod_or_fast {
+	($prod:expr, $test:expr) => {
+		if cfg!(feature = "fast-runtime") {
+			$test
+		} else {
+			$prod
+		}
+	};
+	($prod:expr, $test:expr, $env:expr) => {
+		if cfg!(feature = "fast-runtime") {
+			core::option_env!($env).map(|s| s.parse().ok()).flatten().unwrap_or($test)
+		} else {
+			$prod
+		}
+	};
+}
+
+pub type CouncilCollective = pallet_collective::Instance1;
+pub type TechnicalCollective = pallet_collective::Instance2;
+parameter_types! {
+	pub CouncilMotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 2 * MINUTES, "DOT_MOTION_DURATION");
+	pub const CouncilMaxProposals: u32 = 100;
+	pub const CouncilMaxMembers: u32 = 100;
+}
+
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = CouncilMaxProposals;
+	type MaxMembers = CouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = ();
+}
+parameter_types! {
+	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
+	pub const TechnicalMaxProposals: u32 = 100;
+	pub const TechnicalMaxMembers: u32 = 100;
+}
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = TechnicalMotionDuration;
+	type MaxProposals = TechnicalMaxProposals;
+	type MaxMembers = TechnicalMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	// type WeightInfo = weights::pallet_collective_technical_committee::WeightInfo<Runtime>;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub LaunchPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 1, "DOT_LAUNCH_PERIOD");
+	pub VotingPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 1 * MINUTES, "DOT_VOTING_PERIOD");
+	pub FastTrackVotingPeriod: BlockNumber = prod_or_fast!(3 * HOURS, 1 * MINUTES, "DOT_FAST_TRACK_VOTING_PERIOD");
+	pub const MinimumDeposit: Balance = 100 * DOLLARS;
+	pub EnactmentPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 1, "DOT_ENACTMENT_PERIOD");
+	pub CooloffPeriod: BlockNumber = prod_or_fast!(7 * DAYS, 1, "DOT_COOLOFF_PERIOD");
+	pub const InstantAllowed: bool = true;
+	pub const MaxVotes: u32 = 100;
+	pub const MaxProposals: u32 = 100;
+}
+
+parameter_types! {
+	pub const PreimageMaxSize: u32 = 4096 * 1024;
+	// pub const PreimageBaseDeposit: Balance = deposit(2, 64);
+	// pub const PreimageByteDeposit: Balance = deposit(0, 1);
+	pub const PreimageBaseDeposit: Balance = 1;
+	pub const PreimageByteDeposit: Balance = 1;
+
+}
+
+
+impl pallet_democracy::Config for Runtime {
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = EnactmentPeriod;
+	type VoteLockingPeriod = EnactmentPeriod;
+	type LaunchPeriod = LaunchPeriod;
+	type VotingPeriod = VotingPeriod;
+	type MinimumDeposit = MinimumDeposit;
+	/// A straight majority of the council can decide what their next motion is.
+	type ExternalOrigin = EnsureOneOf<
+			 pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	/// A 60% super-majority can have the next scheduled referendum be a straight majority-carries vote.
+	type ExternalMajorityOrigin = EnsureOneOf<
+			pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 5>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	/// A unanimous council can have the next scheduled referendum be a straight default-carries
+	/// (NTB) vote.
+	type ExternalDefaultOrigin = EnsureOneOf<
+			pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	/// Two thirds of the technical committee can have an `ExternalMajority/ExternalDefault` vote
+	/// be tabled immediately and with a shorter voting/enactment period.
+	type FastTrackOrigin = EnsureOneOf<
+			pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 2, 3>,
+		frame_system::EnsureRoot<AccountId>,
+	>;
+	type InstantOrigin = EnsureOneOf<
+			pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 1, 1>,
+				frame_system::EnsureRoot<AccountId>,
+	>;
+	type InstantAllowed = InstantAllowed;
+	type FastTrackVotingPeriod = FastTrackVotingPeriod;
+	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+	type CancellationOrigin = EnsureOneOf<
+			pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
+		EnsureRoot<AccountId>,
+	>;
+	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
+	// Root must agree.
+	type CancelProposalOrigin = EnsureOneOf<
+			pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 1, 1>,
+					EnsureRoot<AccountId>,
+	>;
+	type BlacklistOrigin = EnsureRoot<AccountId>;
+	// Any single technical committee member may veto a coming council proposal, however they can
+	// only do it once and it lasts only for the cooloff period.
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+	type CooloffPeriod = CooloffPeriod;
+	type PreimageByteDeposit = PreimageByteDeposit;
+	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	type Slash = Treasury;
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = MaxVotes;
+	// type WeightInfo = weights::pallet_democracy::WeightInfo<Runtime>;
+	type WeightInfo = ();
+	type MaxProposals = MaxProposals;
+}
 
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
@@ -502,7 +656,9 @@ construct_runtime!(
 		Bounties: pallet_bounties,
 		// Staking: pallet_staking,
 		// Governance
-		// Democracy: pallet_democracy,
+		Democracy: pallet_democracy,
+		Council: pallet_collective::<Instance1>,
+		TechnicalCommittee: pallet_collective::<Instance2>,
 		// Referenda: pallet_referenda,
 
 		Sudo: pallet_sudo,
