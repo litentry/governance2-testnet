@@ -2103,6 +2103,7 @@ dependencies = [
  "pallet-randomness-collective-flip",
  "pallet-referenda",
  "pallet-scheduler",
+ "pallet-session",
  "pallet-staking",
  "pallet-sudo",
  "pallet-timestamp",

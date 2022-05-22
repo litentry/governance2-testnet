@@ -57,9 +57,11 @@ pallet-referenda = { version = "4.0.0-dev", default-features = false, git = "htt
 pallet-scheduler = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-staking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-bounties = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
-# pallet-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+pallet-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-elections-phragmen  = { version = "5.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+# pallet-babe  = { version = "5.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+# frame-election-provider-support = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", default-features = false }
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 
@@ -72,6 +74,7 @@ std = [
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
 	"frame-system/std",
+    #    "frame-election-provider-support/std",
 	"pallet-aura/std",
 	"pallet-balances/std",
 	"pallet-grandpa/std",
@@ -87,9 +90,10 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-staking/std",
     "pallet-bounties/std",
-    # "pallet-session/std",
+    "pallet-session/std",
     "pallet-collective/std",
     "pallet-elections-phragmen/std",
+#    "pallet-babe/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -120,12 +124,14 @@ runtime-benchmarks = [
     "pallet-bounties/runtime-benchmarks",
     "pallet-collective/runtime-benchmarks",
     "pallet-elections-phragmen/runtime-benchmarks",
+#    "pallet-babe/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
 try-runtime = [
 	"frame-executive/try-runtime",
 	"frame-try-runtime",
 	"frame-system/try-runtime",
+#    "frame-election-provider-support/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-randomness-collective-flip/try-runtime",
@@ -141,4 +147,6 @@ try-runtime = [
     "pallet-bounties/try-runtime",
     "pallet-collective/try-runtime",
     "pallet-elections-phragmen/try-runtime",
+    "pallet-session/try-runtime",
+#    "pallet-babe/try-runtime",
 ]
