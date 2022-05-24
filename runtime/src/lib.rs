@@ -18,23 +18,9 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
-// use runtime_common::{
-// 	auctions, claims, crowdloan, impl_runtime_weights, impls::DealWithFees, paras_registrar,
-// 	prod_or_fast, slots, BlockHashCount, BlockLength, CurrencyToVote, SlowAdjustingFeeUpdate,
-// };
 
 use codec::{Decode, Encode, MaxEncodedLen};
-// use frame_support::pallet_prelude::TypeInfo;
-use frame_support::{
-	assert_ok, ord_parameter_types,
-	traits::{
-		ConstU32, ConstU64, Contains, EqualPrivilegeOnly, OnInitialize, OriginTrait, Polling,
-		PreimageRecipient, SortedMembers,
-		VoteTally,
-	},
-};
 use scale_info::TypeInfo;
-
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -43,26 +29,23 @@ use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{ConstU128, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, LockIdentifier},
+	construct_runtime, parameter_types,	assert_ok, ord_parameter_types,
+	traits::{ConstU128, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, LockIdentifier,
+			 ConstU32, ConstU64, Contains, EqualPrivilegeOnly, OnInitialize, OriginTrait, Polling,
+			 PreimageRecipient, SortedMembers, VoteTally, EnsureOneOf, Everything, InstanceFilter,
+	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
-	StorageValue,
+	PalletId, StorageValue,
 };
 use sp_staking::SessionIndex;
-
-// use frame_election_provider_support::{
-// 	generate_solution_type, onchain, NposSolution, SequentialPhragmen,
-// };
-
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 pub use pallet_scheduler::Call as SchedulerCall;
-pub use pallet_staking::Call as StakingCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -70,20 +53,9 @@ pub use sp_runtime::{Perbill, Permill, Percent};
 
 use frame_system::EnsureRoot;
 
-use frame_support::{
-	// construct_runtime, parameter_types,
-	traits::{EnsureOneOf, Everything, InstanceFilter},
-	// weights::{
-	// 	constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-	// 	ConstantMultiplier, DispatchClass, IdentityFee, Weight,
-	// },
-	PalletId,
-};
 use sp_runtime::curve::PiecewiseLinear;
 use pallet_referenda::{TrackInfo, Curve};
-// use sp_staking::SessionIndex;
 
-// use pallet_bounties::Bounties;
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 }
@@ -305,9 +277,6 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 100 * DOLLARS;
-	pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
 	pub const SpendPeriod: BlockNumber = 24 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(1);
 	pub const DataDepositPerByte: Balance = 1 * CENTS;
@@ -350,11 +319,12 @@ type MoreThanHalfCouncil = EnsureOneOf<
 
 parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
-	// pub const ProposalBond: Permill = Permill::from_percent(5);
-	// pub const ProposalBondMinimum: Balance = 100 * DOLLARS;
-	// pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const ProposalBondMinimum: Balance = 100 * DOLLARS;
+	pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
 	pub const MaxApprovals: u32 = 100;
 }
+
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
@@ -368,8 +338,8 @@ impl pallet_treasury::Config for Runtime {
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = ();
-	// type SpendFunds = Bounties;
-	type SpendFunds = ();
+	type SpendFunds = Bounties;
+	// type SpendFunds = ();
 	type MaxApprovals = MaxApprovals;
 	// type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 	type WeightInfo = ();
@@ -593,69 +563,6 @@ parameter_types! {
 	pub const AlarmInterval: u64 = 1;
 }
 
-// pub struct TracksInfo;
-// pub struct TestTracksInfo;
-// impl TracksInfo<u64, u64> for TestTracksInfo {
-// 	type Id = u8;
-// 	type Origin = <Origin as OriginTrait>::PalletsOrigin;
-// 	fn tracks() -> &'static [(Self::Id, TrackInfo<u64, u64>)] {
-// 		static DATA: [(u8, TrackInfo<u64, u64>); 2] = [
-// 			(
-// 				0u8,
-// 				TrackInfo {
-// 					name: "root",
-// 					max_deciding: 1,
-// 					decision_deposit: 10,
-// 					prepare_period: 4,
-// 					decision_period: 4,
-// 					confirm_period: 2,
-// 					min_enactment_period: 4,
-// 					min_approval: Curve::LinearDecreasing {
-// 						begin: Perbill::from_percent(100),
-// 						delta: Perbill::from_percent(50),
-// 					},
-// 					min_turnout: Curve::LinearDecreasing {
-// 						begin: Perbill::from_percent(100),
-// 						delta: Perbill::from_percent(100),
-// 					},
-// 				},
-// 			),
-// 			(
-// 				1u8,
-// 				TrackInfo {
-// 					name: "none",
-// 					max_deciding: 3,
-// 					decision_deposit: 1,
-// 					prepare_period: 2,
-// 					decision_period: 2,
-// 					confirm_period: 1,
-// 					min_enactment_period: 2,
-// 					min_approval: Curve::LinearDecreasing {
-// 						begin: Perbill::from_percent(55),
-// 						delta: Perbill::from_percent(5),
-// 					},
-// 					min_turnout: Curve::LinearDecreasing {
-// 						begin: Perbill::from_percent(10),
-// 						delta: Perbill::from_percent(10),
-// 					},
-// 				},
-// 			),
-// 		];
-// 		&DATA[..]
-// 	}
-// 	fn track_for(id: &Self::Origin) -> Result<Self::Id, ()> {
-// 		if let Ok(system_origin) = frame_system::RawOrigin::try_from(id.clone()) {
-// 			match system_origin {
-// 				frame_system::RawOrigin::Root => Ok(0),
-// 				frame_system::RawOrigin::None => Ok(1),
-// 				_ => Err(()),
-// 			}
-// 		} else {
-// 			Err(())
-// 		}
-// 	}
-// }
-
 impl VoteTally<u32> for Tally {
 	fn ayes(&self) -> u32 {
 		self.ayes
@@ -819,7 +726,6 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
- 	// [pallet_scheduler, Scheduler]
 	);
 }
 
