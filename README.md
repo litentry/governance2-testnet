@@ -1,11 +1,10 @@
 # governance2-testnet
-Set up a testnet for new substrate governance model
 
+Set up a testnet for new substrate governance model
 
 ## Communication
 
 * [Element](https://matrix.to/#/!FdMRQTDnoYtEPkbHAK:matrix.org?via=matrix.org)
-
 
 # List of pallets to be integrated
 
@@ -21,4 +20,3 @@ link: https://github.com/paritytech/substrate/tree/master/frame
 * [x] bounties
 * [ ] staking
 * [ ] auctions
- 

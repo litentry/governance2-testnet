@@ -1,0 +1,17 @@
+version: "3.2"
+
+services:
+  dev:
+    container_name: governance2
+    image: paritytech/ci-linux:974ba3ac-20201006
+    working_dir: /var/www/governance2
+    ports:
+      - "9944:9944"
+    environment:
+      - CARGO_HOME=/var/www/governance2/.cargo
+    volumes:
+      - .:/var/www/governance2
+      - type: bind
+        source: ./.local
+        target: /root/.local
+    command: bash -c "cargo build --release && ./target/release/governance2 --dev --ws-external"
