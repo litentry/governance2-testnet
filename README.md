@@ -2,6 +2,8 @@
 
 Set up a testnet for new substrate governance model
 
+[Endpoint](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fgovernance2-testnet.litentry.io#/explorer)
+
 ## Communication
 
 * [Element](https://matrix.to/#/!FdMRQTDnoYtEPkbHAK:matrix.org?via=matrix.org)
