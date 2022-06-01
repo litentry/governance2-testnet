@@ -18,5 +18,6 @@ link: https://github.com/paritytech/substrate/tree/master/frame
 * [x] scheduler
 * [x] balance
 * [x] bounties
+* [ ] conviction-voting
 * [ ] staking
 * [ ] auctions
