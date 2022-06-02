@@ -8,7 +8,7 @@ Set up a testnet for new substrate governance model
 
 * [Element](https://matrix.to/#/!FdMRQTDnoYtEPkbHAK:matrix.org?via=matrix.org)
 
-# List of pallets to be integrated
+## List of pallets to be integrated
 
 link: https://github.com/paritytech/substrate/tree/master/frame
 
@@ -23,3 +23,7 @@ link: https://github.com/paritytech/substrate/tree/master/frame
 * [ ] conviction-voting
 * [ ] staking
 * [ ] auctions
+
+## Helpful links
+
+* [Kusama PR about new governance](https://github.com/paritytech/polkadot/pull/5205)
