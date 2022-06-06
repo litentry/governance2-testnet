@@ -651,6 +651,172 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	// Six sessions in an era (6 hours).
+	pub const SessionsPerEra: SessionIndex = 6;
+	// 28 eras for unbonding (7 days).
+	pub const BondingDuration: sp_staking::EraIndex = 28;
+	// 27 eras in which slashes can be cancelled (slightly less than 7 days).
+	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
+	pub const MaxNominatorRewardedPerValidator: u32 = 256;
+	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
+	// 24
+	// pub const MaxNominations: u32 = <NposCompactSolution24 as NposSolution>::LIMIT as u32;
+    pub const MaxNominations: u32 = 24;
+    pub const Period: u32 = 6 * HOURS;
+    pub const Offset: u32 = 0;
+}
+
+// impl pallet_staking::Config for Runtime {
+// 	type MaxNominations = MaxNominations;
+// 	type Currency = Balances;
+// 	type CurrencyBalance = Balance;
+// 	type UnixTime = Timestamp;
+// 	// type CurrencyToVote = CurrencyToVote;
+// 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
+// 	// type ElectionProvider = ElectionProviderMultiPhase;
+//     type ElectionProvider = ();
+// 	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+// 	type RewardRemainder = Treasury;
+// 	type Event = Event;
+// 	// type Slash = Treasury;
+//     type Slash = ();
+// 	type Reward = ();
+// 	type SessionsPerEra = SessionsPerEra;
+// 	type BondingDuration = BondingDuration;
+// 	type SlashDeferDuration = SlashDeferDuration;
+// 	// A majority of the council or root can cancel the slash.
+// 	// type SlashCancelOrigin = SlashCancelOrigin;
+//     type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
+// 	type SessionInterface = Self;
+// 	type EraPayout = EraPayout;
+// 	type NextNewSession = Session;
+// 	// type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+//     type MaxNominatorRewardedPerValidator = frame_support::traits::Const32<32>;
+// 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
+// 	// type VoterList = VoterList;
+//     type VoterList = ();
+// 	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
+// 	// type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
+//     type BenchmarkingConfig = ();
+// 	type OnStakerSlash = ();
+// 	// type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
+//     type WeightInfo = ();
+// }
+pub struct TestShouldEndSession;
+impl pallet_session::ShouldEndSession<u32> for TestShouldEndSession {
+    fn should_end_session(now: u32) -> bool {
+        true
+    }
+}
+pub struct TestValidatorIdOf;
+impl TestValidatorIdOf {
+	// pub fn set(v: BTreeMap<u64, u64>) {
+	// 	// VALIDATOR_ACCOUNTS.with(|m| *m.borrow_mut() = v);
+	// }
+    // pub fn set(v: ) {
+
+    // }
+}
+// impl sp_runtime::traits::Convert<u64, Option<u64>> for TestValidatorIdOf {
+// 	fn convert(x: u64) -> Option<u64> {
+// 		//VALIDATOR_ACCOUNTS.with(|m| m.borrow().get(&x).cloned())
+//         Some(x)
+// 	}
+// }
+// use sp_runtime::AccountId32;
+// impl sp_runtime::traits::Convert<AccountId32, Option<AccountId32>> for TestValidatorIdOf {
+// 	fn convert(x: AccountId32) -> Option<AccountId32> {
+// 		//VALIDATOR_ACCOUNTS.with(|m| m.borrow().get(&x).cloned())
+//         Some(x)
+// 	}
+// }
+impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for TestValidatorIdOf {
+	fn convert(x: AccountId) -> Option<AccountId> {
+		// VALIDATOR_ACCOUNTS.with(|m| m.borrow().get(&x).cloned())
+        Some(x)
+	}
+}
+
+// pub const KEY_ID_A: KeyTypeId = KeyTypeId([4; 4]);
+// pub const KEY_ID_B: KeyTypeId = KeyTypeId([9; 4]);
+
+// #[derive(Debug, Clone, codec::Encode, codec::Decode, PartialEq, Eq)]
+// pub struct PreUpgradeMockSessionKeys {
+// 	pub a: [u8; 32],
+// 	pub b: [u8; 64],
+// }
+
+ use sp_runtime::traits::OpaqueKeys;
+// impl OpaqueKeys for PreUpgradeMockSessionKeys {
+// 	type KeyTypeIdProviders = ();
+
+// 	fn key_ids() -> &'static [KeyTypeId] {
+// 		&[KEY_ID_A, KEY_ID_B]
+// 	}
+
+// 	fn get_raw(&self, i: KeyTypeId) -> &[u8] {
+// 		match i {
+// 			i if i == KEY_ID_A => &self.a[..],
+// 			i if i == KEY_ID_B => &self.b[..],
+// 			_ => &[],
+// 		}
+// 	}
+// }
+
+// pub struct TestSessionHandler;
+// impl pallet_session::SessionHandler<AccountId32> for TestSessionHandler {
+// 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] = &[UintAuthorityId::ID];
+// 	fn on_genesis_session<T: OpaqueKeys>(_validators: &[(AccountId32, T)]) {}
+// 	fn on_new_session<T: OpaqueKeys>(
+// 		changed: bool,
+// 		validators: &[(AccountId32, T)],
+// 		_queued_validators: &[(AccountId32, T)],
+// 	) {
+// 		// SESSION_CHANGED.with(|l| *l.borrow_mut() = changed);
+// 		// AUTHORITIES.with(|l| {
+// 		// 	*l.borrow_mut() = validators
+// 		// 		.iter()
+// 		// 		.map(|(_, id)| id.get::<UintAuthorityId>(DUMMY).unwrap_or_default())
+// 		// 		.collect()
+// 		// });
+// 	}
+// 	fn on_disabled(_validator_index: u32) {
+// 		// DISABLED.with(|l| *l.borrow_mut() = true)
+// 	}
+// 	fn on_before_session_ending() {
+// 		// BEFORE_SESSION_END_CALLED.with(|b| *b.borrow_mut() = true);
+// 	}
+// }
+
+impl pallet_session::Config for Runtime {
+	type Event = Event;
+	type ValidatorId = AccountId;
+    // type ShouldEndSession = Babe;
+    // type ShouldEndSession = TestShouldEndSession;
+    type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	// type ValidatorIdOf = pallet_staking::StashOf<Self>;
+    type ValidatorIdOf = TestValidatorIdOf;
+    // type ValidatorIdOf = pallet_session::ShouldEndSession;
+	// type NextSessionRotation = Babe;
+    // type NextSessionRotation = ();
+	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+
+	// type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	// type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type SessionManager = ();
+	// type SessionHandler = TestSessionHandler;
+	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = opaque::SessionKeys;
+	type WeightInfo = ();
+}
+
+
+// impl pallet_session::historical::Config for Runtime {
+//     type FullIdentification = AccountId32;
+//     type FullIdentificationOf = sp_runtime::traits::ConvertInto;
+// }
+
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -672,7 +838,11 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Bounties: pallet_bounties,
 		Tips: pallet_tips,
-		// Staking: pallet_staking::{Pallet, Call, Storage, Config<T>, Event<T>},
+		// Staking: pallet_staking::{Pallet, Call, Storage, Config<T>, Event<T>} = 6,
+		// Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 8,
+        Session: pallet_session,
+		// Historical: pallet_session::historical::{Pallet} = 34,
+		// Historical: pallet_session::historical,
 		// Governance
 		Democracy: pallet_democracy,
 		Council: pallet_collective::<Instance1>,
