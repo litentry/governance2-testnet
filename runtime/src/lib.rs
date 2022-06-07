@@ -42,6 +42,9 @@ pub use frame_support::{
 };
 use sp_staking::SessionIndex;
 
+use frame_election_provider_support::{
+	onchain, SequentialPhragmen, SortedListProvider, VoteWeight,
+};
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -668,7 +671,46 @@ parameter_types! {
     pub const Period: u32 = 6 * HOURS;
     pub const Offset: u32 = 0;
 }
+// impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+// where
+// 	Call: From<C>,
+// {
+// 	type Extrinsic = UncheckedExtrinsic;
+// 	type OverarchingCall = Call;
+// }
 
+
+// pub struct OnChainSeqPhragmen;
+// impl onchain::Config for OnChainSeqPhragmen {
+// 	type System = Runtime;
+// 	type Solver = SequentialPhragmen<AccountId, Perbill>;
+// 	type DataProvider = Staking;
+// 	type WeightInfo = ();
+// }
+
+// pub struct EraPayout;
+// impl pallet_staking::EraPayout<Balance> for EraPayout {
+// 	fn era_payout(
+// 		total_staked: Balance,
+// 		_total_issuance: Balance,
+// 		era_duration_millis: u64,
+// 	) -> (Balance, Balance) {
+// 		// TODO: #3011 Update with proper auctioned slots tracking.
+// 		// This should be fine for the first year of parachains.
+// 		// let auctioned_slots: u64 = auctions::Pallet::<Runtime>::auction_counter().into();
+// 		// const MAX_ANNUAL_INFLATION: Perquintill = Perquintill::from_percent(10);
+// 		// const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
+
+// 		// era_payout(
+// 		// 	total_staked,
+// 		// 	Gilt::issuance().non_gilt,
+// 		// 	MAX_ANNUAL_INFLATION,
+// 		// 	Perquintill::from_rational(era_duration_millis, MILLISECONDS_PER_YEAR),
+// 		// 	auctioned_slots,
+// 		// )
+//         (deposit(0, 32), deposit(0, 32))
+// 	}
+// }
 // impl pallet_staking::Config for Runtime {
 // 	type MaxNominations = MaxNominations;
 // 	type Currency = Balances;
@@ -681,7 +723,7 @@ parameter_types! {
 // 	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
 // 	type RewardRemainder = Treasury;
 // 	type Event = Event;
-// 	// type Slash = Treasury;
+// 	// // type Slash = Treasury;
 //     type Slash = ();
 // 	type Reward = ();
 // 	type SessionsPerEra = SessionsPerEra;
@@ -693,9 +735,8 @@ parameter_types! {
 // 	type SessionInterface = Self;
 // 	type EraPayout = EraPayout;
 // 	type NextNewSession = Session;
-// 	// type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-//     type MaxNominatorRewardedPerValidator = frame_support::traits::Const32<32>;
-// 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
+// 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+//     type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
 // 	// type VoterList = VoterList;
 //     type VoterList = ();
 // 	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
@@ -705,6 +746,7 @@ parameter_types! {
 // 	// type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
 //     type WeightInfo = ();
 // }
+
 pub struct TestShouldEndSession;
 impl pallet_session::ShouldEndSession<u32> for TestShouldEndSession {
     fn should_end_session(now: u32) -> bool {
@@ -814,10 +856,10 @@ impl pallet_session::Config for Runtime {
 }
 
 
-// impl pallet_session::historical::Config for Runtime {
-//     type FullIdentification = AccountId32;
-//     type FullIdentificationOf = sp_runtime::traits::ConvertInto;
-// }
+impl pallet_session::historical::Config for Runtime {
+    type FullIdentification = AccountId;
+    type FullIdentificationOf = sp_runtime::traits::ConvertInto;
+}
 
 impl pallet_preimage::Config for Runtime {
 	type WeightInfo = ();
@@ -872,11 +914,10 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Bounties: pallet_bounties,
 		Tips: pallet_tips,
-		// Staking: pallet_staking::{Pallet, Call, Storage, Config<T>, Event<T>} = 6,
-		// Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 8,
         Session: pallet_session,
+		// Staking: pallet_staking,
 		// Historical: pallet_session::historical::{Pallet} = 34,
-		// Historical: pallet_session::historical,
+		Historical: pallet_session::historical,
         Preimage: pallet_preimage,
 		Whitelist: pallet_whitelist,
 
