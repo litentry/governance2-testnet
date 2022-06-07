@@ -671,81 +671,100 @@ parameter_types! {
     pub const Period: u32 = 6 * HOURS;
     pub const Offset: u32 = 0;
 }
-// impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
-// where
-// 	Call: From<C>,
-// {
-// 	type Extrinsic = UncheckedExtrinsic;
-// 	type OverarchingCall = Call;
-// }
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+where
+	Call: From<C>,
+{
+	type Extrinsic = UncheckedExtrinsic;
+	type OverarchingCall = Call;
+}
 
 
-// pub struct OnChainSeqPhragmen;
-// impl onchain::Config for OnChainSeqPhragmen {
-// 	type System = Runtime;
-// 	type Solver = SequentialPhragmen<AccountId, Perbill>;
-// 	type DataProvider = Staking;
-// 	type WeightInfo = ();
-// }
+pub struct OnChainSeqPhragmen;
+impl onchain::Config for OnChainSeqPhragmen {
+	type System = Runtime;
+	type Solver = SequentialPhragmen<AccountId, Perbill>;
+	type DataProvider = Staking;
+	type WeightInfo = ();
+}
 
-// pub struct EraPayout;
-// impl pallet_staking::EraPayout<Balance> for EraPayout {
-// 	fn era_payout(
-// 		total_staked: Balance,
-// 		_total_issuance: Balance,
-// 		era_duration_millis: u64,
-// 	) -> (Balance, Balance) {
-// 		// TODO: #3011 Update with proper auctioned slots tracking.
-// 		// This should be fine for the first year of parachains.
-// 		// let auctioned_slots: u64 = auctions::Pallet::<Runtime>::auction_counter().into();
-// 		// const MAX_ANNUAL_INFLATION: Perquintill = Perquintill::from_percent(10);
-// 		// const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
+pub struct EraPayout;
+impl pallet_staking::EraPayout<Balance> for EraPayout {
+	fn era_payout(
+		total_staked: Balance,
+		_total_issuance: Balance,
+		era_duration_millis: u64,
+	) -> (Balance, Balance) {
+		// TODO: #3011 Update with proper auctioned slots tracking.
+		// This should be fine for the first year of parachains.
+		// let auctioned_slots: u64 = auctions::Pallet::<Runtime>::auction_counter().into();
+		// const MAX_ANNUAL_INFLATION: Perquintill = Perquintill::from_percent(10);
+		// const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
 
-// 		// era_payout(
-// 		// 	total_staked,
-// 		// 	Gilt::issuance().non_gilt,
-// 		// 	MAX_ANNUAL_INFLATION,
-// 		// 	Perquintill::from_rational(era_duration_millis, MILLISECONDS_PER_YEAR),
-// 		// 	auctioned_slots,
-// 		// )
-//         (deposit(0, 32), deposit(0, 32))
-// 	}
-// }
-// impl pallet_staking::Config for Runtime {
-// 	type MaxNominations = MaxNominations;
-// 	type Currency = Balances;
-// 	type CurrencyBalance = Balance;
-// 	type UnixTime = Timestamp;
-// 	// type CurrencyToVote = CurrencyToVote;
-// 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
-// 	// type ElectionProvider = ElectionProviderMultiPhase;
-//     type ElectionProvider = ();
-// 	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
-// 	type RewardRemainder = Treasury;
-// 	type Event = Event;
-// 	// // type Slash = Treasury;
-//     type Slash = ();
-// 	type Reward = ();
-// 	type SessionsPerEra = SessionsPerEra;
-// 	type BondingDuration = BondingDuration;
-// 	type SlashDeferDuration = SlashDeferDuration;
-// 	// A majority of the council or root can cancel the slash.
-// 	// type SlashCancelOrigin = SlashCancelOrigin;
-//     type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
-// 	type SessionInterface = Self;
-// 	type EraPayout = EraPayout;
-// 	type NextNewSession = Session;
-// 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-//     type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
-// 	// type VoterList = VoterList;
-//     type VoterList = ();
-// 	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
-// 	// type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
-//     type BenchmarkingConfig = ();
-// 	type OnStakerSlash = ();
-// 	// type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
-//     type WeightInfo = ();
-// }
+		// era_payout(
+		// 	total_staked,
+		// 	Gilt::issuance().non_gilt,
+		// 	MAX_ANNUAL_INFLATION,
+		// 	Perquintill::from_rational(era_duration_millis, MILLISECONDS_PER_YEAR),
+		// 	auctioned_slots,
+		// )
+        (deposit(0, 32), deposit(0, 32))
+	}
+}
+pub struct StakingBenchmarkingConfig;
+impl pallet_staking::BenchmarkingConfig for StakingBenchmarkingConfig {
+	type MaxValidators = ConstU32<1000>;
+	type MaxNominators = ConstU32<1000>;
+}
+impl pallet_staking::Config for Runtime {
+	type MaxNominations = MaxNominations;
+	type Currency = Balances;
+	type CurrencyBalance = Balance;
+	type UnixTime = Timestamp;
+	// type CurrencyToVote = CurrencyToVote;
+	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
+	// type ElectionProvider = ElectionProviderMultiPhase;
+    type ElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	type RewardRemainder = Treasury;
+	type Event = Event;
+	// // type Slash = Treasury;
+    type Slash = ();
+	type Reward = ();
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	type SlashDeferDuration = SlashDeferDuration;
+	// A majority of the council or root can cancel the slash.
+	// type SlashCancelOrigin = SlashCancelOrigin;
+    type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type SessionInterface = Self;
+	type EraPayout = EraPayout;
+	type NextNewSession = Session;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+    type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
+	type VoterList = VoterList;
+    // type VoterList = ();
+	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
+	// type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
+    type BenchmarkingConfig = StakingBenchmarkingConfig;
+	type OnStakerSlash = ();
+	// type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
+    type WeightInfo = ();
+}
+mod bag_thresholds;
+
+parameter_types! {
+	pub const BagThresholds: &'static [u64] = &bag_thresholds::THRESHOLDS;
+}
+
+impl pallet_bags_list::Config for Runtime {
+	type Event = Event;
+	type ScoreProvider = Staking;
+	type BagThresholds = BagThresholds;
+	type Score = sp_npos_elections::VoteWeight;
+	type WeightInfo = ();
+}
+
 
 pub struct TestShouldEndSession;
 impl pallet_session::ShouldEndSession<u32> for TestShouldEndSession {
@@ -792,46 +811,6 @@ impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for TestValidator
 // }
 
  use sp_runtime::traits::OpaqueKeys;
-// impl OpaqueKeys for PreUpgradeMockSessionKeys {
-// 	type KeyTypeIdProviders = ();
-
-// 	fn key_ids() -> &'static [KeyTypeId] {
-// 		&[KEY_ID_A, KEY_ID_B]
-// 	}
-
-// 	fn get_raw(&self, i: KeyTypeId) -> &[u8] {
-// 		match i {
-// 			i if i == KEY_ID_A => &self.a[..],
-// 			i if i == KEY_ID_B => &self.b[..],
-// 			_ => &[],
-// 		}
-// 	}
-// }
-
-// pub struct TestSessionHandler;
-// impl pallet_session::SessionHandler<AccountId32> for TestSessionHandler {
-// 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] = &[UintAuthorityId::ID];
-// 	fn on_genesis_session<T: OpaqueKeys>(_validators: &[(AccountId32, T)]) {}
-// 	fn on_new_session<T: OpaqueKeys>(
-// 		changed: bool,
-// 		validators: &[(AccountId32, T)],
-// 		_queued_validators: &[(AccountId32, T)],
-// 	) {
-// 		// SESSION_CHANGED.with(|l| *l.borrow_mut() = changed);
-// 		// AUTHORITIES.with(|l| {
-// 		// 	*l.borrow_mut() = validators
-// 		// 		.iter()
-// 		// 		.map(|(_, id)| id.get::<UintAuthorityId>(DUMMY).unwrap_or_default())
-// 		// 		.collect()
-// 		// });
-// 	}
-// 	fn on_disabled(_validator_index: u32) {
-// 		// DISABLED.with(|l| *l.borrow_mut() = true)
-// 	}
-// 	fn on_before_session_ending() {
-// 		// BEFORE_SESSION_END_CALLED.with(|b| *b.borrow_mut() = true);
-// 	}
-// }
 
 impl pallet_session::Config for Runtime {
 	type Event = Event;
@@ -857,8 +836,11 @@ impl pallet_session::Config for Runtime {
 
 
 impl pallet_session::historical::Config for Runtime {
-    type FullIdentification = AccountId;
-    type FullIdentificationOf = sp_runtime::traits::ConvertInto;
+    // type FullIdentification = AccountId;
+    // type FullIdentificationOf = sp_runtime::traits::ConvertInto;
+    // type FullIdentificationOf = sp_runtime::traits::ConvertInto;
+	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
 }
 
 impl pallet_preimage::Config for Runtime {
@@ -915,9 +897,11 @@ construct_runtime!(
 		Bounties: pallet_bounties,
 		Tips: pallet_tips,
         Session: pallet_session,
-		// Staking: pallet_staking,
-		// Historical: pallet_session::historical::{Pallet} = 34,
+		Staking: pallet_staking,
 		Historical: pallet_session::historical,
+
+		VoterList: pallet_bags_list::{Pallet, Call, Storage, Event<T>} = 39,
+
         Preimage: pallet_preimage,
 		Whitelist: pallet_whitelist,
 
