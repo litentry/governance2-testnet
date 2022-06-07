@@ -637,8 +637,10 @@ impl pallet_referenda::Config for Runtime {
 	type CancelOrigin = EnsureRoot<AccountId>;
 	type KillOrigin = EnsureRoot<AccountId>;
 	type Slash = ();
-	type Votes = u32;
-	type Tally = Tally;
+	// type Votes = u32;
+	// type Tally = Tally;
+    type Votes = pallet_conviction_voting::VotesOf<Runtime>;
+    type Tally = pallet_conviction_voting::TallyOf<Runtime>;
 	type SubmissionDeposit = ConstU128<2>;
 	type MaxQueued = ConstU32<3>;
 	type UndecidingTimeout = ConstU32<20>;
@@ -836,6 +838,19 @@ impl pallet_whitelist::Config for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+	pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
+}
+
+impl pallet_conviction_voting::Config for Runtime {
+    type WeightInfo = ();
+	type Event = Event;
+	type Currency = Balances;
+	type VoteLockingPeriod = VoteLockingPeriod;
+	type MaxVotes = ConstU32<512>;
+	type MaxTurnout = frame_support::traits::TotalIssuanceOf<Balances, AccountId>;
+	type Polls = Referenda;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -864,12 +879,14 @@ construct_runtime!(
 		// Historical: pallet_session::historical,
         Preimage: pallet_preimage,
 		Whitelist: pallet_whitelist,
+
 		// Governance
 		Democracy: pallet_democracy,
 		Council: pallet_collective::<Instance1>,
 		TechnicalCommittee: pallet_collective::<Instance2>,
 		PhragmenElection: pallet_elections_phragmen,
 		Treasury: pallet_treasury,
+		ConvictionVoting: pallet_conviction_voting::{Pallet, Call, Storage, Event<T>} = 20,
 		Referenda: pallet_referenda,
 
 		Sudo: pallet_sudo,
