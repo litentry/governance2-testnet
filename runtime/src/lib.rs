@@ -827,14 +827,14 @@ impl pallet_preimage::Config for Runtime {
     type ByteDeposit = PreimageByteDeposit;
 }
 
-// impl pallet_whitelist::Config for Runtime {
-// 	type Event = Event;
-// 	type Call = Call;
-// 	type WhitelistOrigin = EnsureRoot<Self::AccountId>;
-// 	type DispatchWhitelistedOrigin = EnsureRoot<Self::AccountId>;
-// 	type PreimageProvider = ();
-// 	type WeightInfo = ();
-// }
+impl pallet_whitelist::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type WhitelistOrigin = EnsureRoot<AccountId>;
+	type DispatchWhitelistedOrigin = EnsureRoot<AccountId>;
+	type PreimageProvider = ();
+	type WeightInfo = ();
+}
 
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -862,8 +862,8 @@ construct_runtime!(
         Session: pallet_session,
 		// Historical: pallet_session::historical::{Pallet} = 34,
 		// Historical: pallet_session::historical,
-		// Whitelist: pallet_whitelist,
         Preimage: pallet_preimage,
+		Whitelist: pallet_whitelist,
 		// Governance
 		Democracy: pallet_democracy,
 		Council: pallet_collective::<Instance1>,
