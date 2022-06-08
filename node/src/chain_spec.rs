@@ -150,7 +150,7 @@ fn testnet_genesis(
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
 		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
+            authorities: vec![],
 		},
 		session: SessionConfig {
 			keys: initial_authorities
@@ -159,14 +159,13 @@ fn testnet_genesis(
 					(
 						x.2.clone(),
 						x.2.clone(),
-						// session_keys(x.0.clone(), x..clone(), x.4.clone(), x.5.clone()),
                         SessionKeys {aura: x.0.clone(), grandpa: x.1.clone()},
 					)
 				})
 				.collect::<Vec<_>>(),
 		},
 		grandpa: GrandpaConfig {
-			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
+			authorities: vec![],
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
