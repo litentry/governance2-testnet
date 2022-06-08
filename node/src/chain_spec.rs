@@ -35,12 +35,11 @@ where
 
 /// Generate an Aura authority key.
 pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId, AccountId) {
-	// (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
-    (
-        get_from_seed::<AuraId>(s),
-        get_from_seed::<GrandpaId>(s),
-        get_account_id_from_seed::<sr25519::Public>(s)
-    )
+	(
+		get_from_seed::<AuraId>(s),
+		get_from_seed::<GrandpaId>(s),
+		get_account_id_from_seed::<sr25519::Public>(s)
+	)
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -150,7 +149,7 @@ fn testnet_genesis(
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
 		aura: AuraConfig {
-            authorities: vec![],
+			authorities: vec![],
 		},
 		session: SessionConfig {
 			keys: initial_authorities
@@ -159,7 +158,7 @@ fn testnet_genesis(
 					(
 						x.2.clone(),
 						x.2.clone(),
-                        SessionKeys {aura: x.0.clone(), grandpa: x.1.clone()},
+						SessionKeys {aura: x.0.clone(), grandpa: x.1.clone()},
 					)
 				})
 				.collect::<Vec<_>>(),
@@ -172,7 +171,7 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
-        staking: Default::default(),
+		staking: Default::default(),
 		treasury: Default::default(),
 		democracy: Default::default(),
 		council: Default::default(),
