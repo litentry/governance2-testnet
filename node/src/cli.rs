@@ -47,4 +47,6 @@ pub enum Subcommand {
 	/// Try some command against runtime state. Note: `try-runtime` feature must be enabled.
 	#[cfg(not(feature = "try-runtime"))]
 	TryRuntime,
+
+	ChainInfo(sc_cli::ChainInfoCmd),
 }
