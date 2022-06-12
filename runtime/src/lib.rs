@@ -12,15 +12,14 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys, Verify},
+	Perbill, Permill, Percent, curve::PiecewiseLinear,
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys, Verify, ConstU16, Replace, TypedGet},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-
-pub use sp_runtime::{Perbill, Permill, Percent, curve::PiecewiseLinear};
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -33,6 +32,7 @@ pub use frame_support::{
 	traits::{ConstU128, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, LockIdentifier,
 			 ConstU32, ConstU64, Contains, EqualPrivilegeOnly, OnInitialize, OriginTrait, Polling,
 			 PreimageRecipient, SortedMembers, VoteTally, EnsureOneOf, Everything, InstanceFilter,
+			 MapSuccess, TryMapSuccess,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -49,6 +49,14 @@ pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
+};
+
+pub mod governance;
+use governance::{
+	// old::CouncilCollective,
+	pallet_custom_origins,
+	// AuctionAdmin, GeneralAdmin, LeaseAdmin,
+	// StakingAdmin, TreasurySpender,
 };
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
@@ -164,6 +172,8 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 pub const UNIT: Balance = 1_000_000_000_000;
 pub const DOLLARS: Balance = UNIT; // 1_000_000_000_000
 pub const CENTS: Balance = DOLLARS / 100; // 10_000_000_000
+pub const QUID: Balance = CENTS * 100;
+pub const GRAND: Balance = QUID * 1_000;
 pub const MILLICENTS: Balance = CENTS / 1_000; // 10_000_000
 
 parameter_types! {
@@ -593,11 +603,12 @@ impl pallet_transaction_payment::Config for Runtime {
 
 pub struct TracksInfo;
 impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
-	type Id = u8;
+	// type Id = u8;
+	type Id = u16;
 	type Origin = <Origin as frame_support::traits::OriginTrait>::PalletsOrigin;
 	fn tracks() -> &'static [(Self::Id, pallet_referenda::TrackInfo<Balance, BlockNumber>)] {
-		static DATA: [(u8, pallet_referenda::TrackInfo<Balance, BlockNumber>); 1] = [(
-			0u8,
+		static DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 1] = [(
+			0u16,
 			pallet_referenda::TrackInfo {
 				name: "root",
 				max_deciding: 1,
@@ -831,12 +842,14 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 }
 
+impl pallet_custom_origins::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
-	NodeBlock = opaque::Block,
-	UncheckedExtrinsic = UncheckedExtrinsic
+		NodeBlock = opaque::Block,
+		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		// Token related
 		System: frame_system,
@@ -868,6 +881,10 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		ConvictionVoting: pallet_conviction_voting::{Pallet, Call, Storage, Event<T>} = 20,
 		Referenda: pallet_referenda,
+		FellowshipCollective: pallet_ranked_collective::<Instance1>,
+		FellowshipReferenda: pallet_referenda::<Instance2>,
+
+		Origins: pallet_custom_origins,
 
 		Sudo: pallet_sudo,
 	}
