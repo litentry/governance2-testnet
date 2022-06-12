@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-docker:
+  deployment-testnet:
     runs-on: self-hosted
     steps:
       - name: Checkout codes
@@ -31,5 +31,4 @@ jobs:
 
       - name: Compile Source Code
         run: |
-          cargo build --release &&
           source ./scripts/start-testnet.sh

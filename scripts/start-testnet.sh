@@ -1,9 +1,6 @@
 #!/bin/bash
 
-pid=$(ps aux | grep governance2 | grep -v grep | awk ${print '$2'})
-echo "Running governance2 pid is: $pid"
-
-[ ! -z $pid ] && kill -9 $pid
-
-echo "Start a new testnet with --tmp option ..."
-./target/release/governance2 --tmp --dev --unsafe-rpc-external --unsafe-ws-external --rpc-methods unsafe --rpc-cors all
+$HOME/.cargo/bin/cargo build --release
+ln -sf $HOME/actions-runner/_work/governance2-testnet/governance2-testnet/release/governance2 /opt/governance2
+echo "ARGS=\"--tmp --dev --unsafe-rpc-external --unsafe-ws-external --rpc-methods unsafe --rpc-cors all\"" > /opt/governance2.conf
+sudo systemctl restart governance2-testnet
