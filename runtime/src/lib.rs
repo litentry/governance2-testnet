@@ -42,7 +42,7 @@ pub use frame_support::{
 
 use frame_election_provider_support::{onchain, SequentialPhragmen, VoteWeight};
 
-pub use frame_system::{Call as SystemCall, EnsureRoot};
+pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 
@@ -336,12 +336,27 @@ parameter_types! {
 	pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
 	pub const MaxApprovals: u32 = 100;
 }
+pub struct SpendOrigin;
+impl frame_support::traits::EnsureOrigin<Origin> for SpendOrigin {
+	type Success = u128;
+	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
+		Result::<frame_system::RawOrigin<_>, Origin>::from(o).and_then(|o| match o {
+			frame_system::RawOrigin::Root => Ok(u128::max_value()),
+			r => Err(Origin::from(r)),
+		})
+	}
+	#[cfg(feature = "runtime-benchmarks")]
+	fn try_successful_origin() -> Result<Origin, ()> {
+		Ok(Origin::root())
+	}
+}
 
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = ApproveOrigin;
 	type RejectOrigin = MoreThanHalfCouncil;
+	type SpendOrigin = SpendOrigin;
 	type Event = Event;
 	type OnSlash = Treasury;
 	type ProposalBond = ProposalBond;
@@ -591,13 +606,22 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 				decision_period: 4,
 				confirm_period: 2,
 				min_enactment_period: 4,
-				min_approval: pallet_referenda::Curve::LinearDecreasing {
+				min_approval: pallet_referenda::Curve::SteppedDecreasing {
 					begin: Perbill::from_percent(100),
-					delta: Perbill::from_percent(50),
+					end: Perbill::from_percent(500),
+					step: Perbill::from_percent(10),
+					period: Perbill::from_percent(1),
 				},
-				min_turnout: pallet_referenda::Curve::LinearDecreasing {
-					begin: Perbill::from_percent(100),
-					delta: Perbill::from_percent(100),
+				// min_turnout: pallet_referenda::Curve::SteppedDecreasing {
+				// 	begin: Perbill::from_percent(100),
+				// 	end: Perbill::from_percent(500),
+				// 	step: Perbill::from_percent(10),
+				// 	period: Perbill::from_percent(1),
+				// },
+				min_support: pallet_referenda::Curve::LinearDecreasing {
+					length: Perbill::from_percent(100),
+					floor: Perbill::from_percent(100),
+					ceil: Perbill::from_percent(500),
 				},
 			},
 		)];
@@ -623,6 +647,7 @@ impl pallet_referenda::Config for Runtime {
 	type Currency = Balances;
 	type CancelOrigin = EnsureRoot<AccountId>;
 	type KillOrigin = EnsureRoot<AccountId>;
+	type SubmitOrigin = EnsureSigned<AccountId>;
 	type Slash = ();
 	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
