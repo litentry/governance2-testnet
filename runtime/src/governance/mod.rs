@@ -20,8 +20,8 @@ use super::*;
 use frame_support::{parameter_types, traits::EitherOf};
 use frame_system::EnsureRootWithSuccess;
 
-// Old governance configurations.
-pub mod old;
+// // Old governance configurations.
+// pub mod old;
 
 mod origins;
 pub use origins::{
@@ -31,8 +31,9 @@ pub use origins::{
 };
 // mod tracks;
 // pub use tracks::TracksInfo;
-// mod fellowship;
+mod fellowship;
 // pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
+pub use fellowship::{FellowshipCollectiveInstance,};
 
 // parameter_types! {
 // 	pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
