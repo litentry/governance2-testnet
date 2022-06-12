@@ -51,6 +51,14 @@ use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
 
+pub mod governance;
+use governance::{
+	// old::CouncilCollective,
+	pallet_custom_origins,
+	// AuctionAdmin, GeneralAdmin, LeaseAdmin,
+	// StakingAdmin, TreasurySpender,
+};
+
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 }
@@ -164,6 +172,8 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 pub const UNIT: Balance = 1_000_000_000_000;
 pub const DOLLARS: Balance = UNIT; // 1_000_000_000_000
 pub const CENTS: Balance = DOLLARS / 100; // 10_000_000_000
+pub const QUID: Balance = CENTS * 100;
+pub const GRAND: Balance = QUID * 1_000;
 pub const MILLICENTS: Balance = CENTS / 1_000; // 10_000_000
 
 parameter_types! {
@@ -831,12 +841,14 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 }
 
+impl pallet_custom_origins::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
-	NodeBlock = opaque::Block,
-	UncheckedExtrinsic = UncheckedExtrinsic
+		NodeBlock = opaque::Block,
+		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		// Token related
 		System: frame_system,
@@ -868,6 +880,12 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		ConvictionVoting: pallet_conviction_voting::{Pallet, Call, Storage, Event<T>} = 20,
 		Referenda: pallet_referenda,
+		// FellowshipCollective: pallet_ranked_collective::<Instance1>::{
+		//		Pallet, Call, Storage, Event<T>
+		// } = 22,
+		// FellowshipReferenda: pallet_referenda::<Instance2>;
+		// Origins: pallet_custom_origins::{Origin} = 43,
+		Origins: pallet_custom_origins,
 
 		Sudo: pallet_sudo,
 	}

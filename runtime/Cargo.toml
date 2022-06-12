@@ -66,7 +66,7 @@ pallet-preimage = { version = "4.0.0-dev", default-features = false, git = "http
 pallet-whitelist = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-conviction-voting = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-bags-list = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-# pallet-ranked-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+pallet-ranked-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-elections-phragmen  = { version = "5.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 
 [build-dependencies]
@@ -96,16 +96,15 @@ std = [
 	"pallet-referenda/std",
 	"pallet-scheduler/std",
 	"pallet-staking/std",
-    "pallet-bounties/std",
-    "pallet-session/std",
-    "pallet-collective/std",
-    "pallet-preimage/std",
-    "pallet-whitelist/std",
-    # "pallet-ranked-collective/std",
-    # "pallet-conviction-voting/std",
-    "pallet-elections-phragmen/std",
-    "pallet-bags-list/std",
-#    "pallet-babe/std",
+	"pallet-bounties/std",
+	"pallet-session/std",
+	"pallet-collective/std",
+	"pallet-preimage/std",
+	 "pallet-whitelist/std",
+	"pallet-ranked-collective/std",
+	"pallet-conviction-voting/std",
+	"pallet-elections-phragmen/std",
+	"pallet-bags-list/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -117,8 +116,8 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
-    "sp-staking/std",
-    "sp-npos-elections/std",
+	"sp-staking/std",
+	"sp-npos-elections/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -134,14 +133,13 @@ runtime-benchmarks = [
 	"pallet-referenda/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-staking/runtime-benchmarks",
-    "pallet-bounties/runtime-benchmarks",
-    "pallet-collective/runtime-benchmarks",
-    "pallet-preimage/runtime-benchmarks",
-    "pallet-whitelist/runtime-benchmarks",
-    # "pallet-ranked-collective/runtime-benchmarks",
-    "pallet-elections-phragmen/runtime-benchmarks",
-    # "pallet-conviction-voting/runtime-benchmarks",
-#    "pallet-babe/runtime-benchmarks",
+	"pallet-bounties/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
+	"pallet-whitelist/runtime-benchmarks",
+	"pallet-ranked-collective/runtime-benchmarks",
+	"pallet-elections-phragmen/runtime-benchmarks",
+	"pallet-conviction-voting/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
 try-runtime = [
@@ -161,13 +159,12 @@ try-runtime = [
 	"pallet-referenda/try-runtime",
 	"pallet-scheduler/try-runtime",
 	"pallet-staking/try-runtime",
-    "pallet-bounties/try-runtime",
-    "pallet-collective/try-runtime",
-    "pallet-elections-phragmen/try-runtime",
-    "pallet-session/try-runtime",
-    "pallet-preimage/try-runtime",
-    "pallet-whitelist/try-runtime",
-    # "pallet-ranked-collective/try-runtime",
-    # "pallet-conviction-voting/try-runtime",
-#    "pallet-babe/try-runtime",
+	"pallet-bounties/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-elections-phragmen/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-preimage/try-runtime",
+	"pallet-whitelist/try-runtime",
+	# "pallet-ranked-collective/try-runtime",
+	# "pallet-conviction-voting/try-runtime",
 ]
