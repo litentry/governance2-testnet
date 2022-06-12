@@ -1,0 +1,35 @@
+name: Build & Test
+
+on:
+  push:
+    branches:
+      - main
+      - deployment-test
+    paths-ignore:
+      - "**/dependabot.yml"
+      - "**/README.md"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-docker:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout codes
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Compile Source Code
+        run: |
+          cargo build --release &&
+          source ./scripts/start-testnet.sh
