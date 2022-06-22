@@ -1,5 +1,5 @@
 # governance2-testnet
-[![Check Set-Up & Build](https://github.com/litentry/governance2-testnet/actions/workflows/check.yml/badge.svg)](https://github.com/litentry/governance2-testnet/actions/workflows/check.yml)
+[![Build & Test](https://github.com/litentry/governance2-testnet/actions/workflows/deploy-testnet.yml/badge.svg)](https://github.com/litentry/governance2-testnet/actions/workflows/deploy-testnet.yml)
 
 Set up a testnet for new substrate governance model
 
@@ -21,9 +21,9 @@ link: https://github.com/paritytech/substrate/tree/master/frame
 * [x] scheduler
 * [x] balance
 * [x] bounties
-* [ ] conviction-voting
-* [ ] staking
-* [ ] auctions
+* [x] conviction-voting
+* [x] staking
+* [x] auctions
 
 ## Helpful links
 
