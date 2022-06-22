@@ -1,7 +1,11 @@
 [workspace]
 members = [
+	"core-primitives",
     "node",
     "runtime",
+	"primitives",
+	"parachain",
+	"xcm",
 ]
 [profile.release]
 panic = "unwind"

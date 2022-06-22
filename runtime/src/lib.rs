@@ -10,13 +10,23 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+// use primitives::v2::{
+// 	AccountIndex, CandidateEvent, CandidateHash,
+// 	CommittedCandidateReceipt, CoreState, DisputeState, GroupRotationInfo,  Id as ParaId,
+// 	InboundDownwardMessage, InboundHrmpMessage, Moment, Nonce, OccupiedCoreAssumption,
+// 	PersistedValidationData, PvfCheckStatement, ScrapedOnChainVotes, SessionInfo,
+// 	ValidationCode, ValidationCodeHash, ValidatorId, ValidatorIndex, ValidatorSignature,
+// };
+
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	Perbill, Permill, Percent, curve::PiecewiseLinear,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys, Verify, ConstU16, Replace, TypedGet},
-	transaction_validity::{TransactionSource, TransactionValidity},
+	transaction_validity::{TransactionSource, TransactionValidity, TransactionPriority},
 	ApplyExtrinsicResult, MultiSignature,
 };
+
+use sp_std::marker::PhantomData;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -26,13 +36,35 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+use runtime_common::{
+	auctions,
+	// claims,
+	// crowdloan,
+	paras_registrar,
+	// prod_or_fast, slots, BlockHashCount, BlockLength, CurrencyToVote, SlowAdjustingFeeUpdate,
+	prod_or_fast,
+	slots,
+};
+use runtime_parachains::{
+	configuration as parachains_configuration, disputes as parachains_disputes,
+	dmp as parachains_dmp, hrmp as parachains_hrmp, inclusion as parachains_inclusion,
+	initializer as parachains_initializer, origin as parachains_origin, paras as parachains_paras,
+	paras_inherent as parachains_paras_inherent, reward_points as parachains_reward_points,
+	runtime_api_impl::v2 as parachains_runtime_api_impl, scheduler as parachains_scheduler,
+	session_info as parachains_session_info, shared as parachains_shared, ump as parachains_ump,
+};
+// pub mod xcm_config;
+
+
+mod weights;
+
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types, assert_ok, ord_parameter_types, PalletId, StorageValue,
 	traits::{ConstU128, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, LockIdentifier,
 			 ConstU32, ConstU64, Contains, EqualPrivilegeOnly, OnInitialize, OriginTrait, Polling,
 			 PreimageRecipient, SortedMembers, VoteTally, EnsureOneOf, Everything, InstanceFilter,
-			 MapSuccess, TryMapSuccess,
+			 MapSuccess, TryMapSuccess, Get
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -55,7 +87,8 @@ pub mod governance;
 use governance::{
 	// old::CouncilCollective,
 	pallet_custom_origins,
-	// AuctionAdmin, GeneralAdmin, LeaseAdmin,
+	// AuctionAdmin, GeneralAdmin,
+	LeaseAdmin,
 	// StakingAdmin, TreasurySpender,
 };
 
@@ -63,23 +96,23 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 }
 
-#[macro_export]
-macro_rules! prod_or_fast {
-	($prod:expr, $test:expr) => {
-		if cfg!(feature = "fast-runtime") {
-			$test
-		} else {
-			$prod
-		}
-	};
-	($prod:expr, $test:expr, $env:expr) => {
-		if cfg!(feature = "fast-runtime") {
-			core::option_env!($env).map(|s| s.parse().ok()).flatten().unwrap_or($test)
-		} else {
-			$prod
-		}
-	};
-}
+// #[macro_export]
+// macro_rules! prod_or_fast {
+// 	($prod:expr, $test:expr) => {
+// 		if cfg!(feature = "fast-runtime") {
+// 			$test
+// 		} else {
+// 			$prod
+// 		}
+// 	};
+// 	($prod:expr, $test:expr, $env:expr) => {
+// 		if cfg!(feature = "fast-runtime") {
+// 			core::option_env!($env).map(|s| s.parse().ok()).flatten().unwrap_or($test)
+// 		} else {
+// 			$prod
+// 		}
+// 	};
+// }
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -558,7 +591,13 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+// impl From<pallet_transaction_payment::Event<Runtime>> for Event {
+// 	fn from(event: pallet_transaction_payment::Event<Runtime>) -> Self {
+
+// 	}
+// }
 impl pallet_transaction_payment::Config for Runtime {
+	type Event = Event;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
@@ -842,7 +881,275 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 }
 
-impl pallet_custom_origins::Config for Runtime {}
+impl pallet_custom_origins::Config for Runtime {
+
+}
+
+parameter_types! {
+	pub const ParaDeposit: Balance = 40 * UNIT;
+}
+
+// use frame_support::{traits::Get, weights::Weight};
+// use sp_std::marker::PhantomData;
+////////////////////////////////////////////////////////////////////////////////
+impl pallet_authority_discovery::Config for Runtime {
+	type MaxAuthorities = MaxAuthorities;
+}
+
+impl parachains_origin::Config for Runtime {}
+
+impl parachains_configuration::Config for Runtime {
+	type WeightInfo = weights::runtime_parachains_configuration::WeightInfo<Runtime>;
+	// type WeightInfo = ();
+}
+
+impl parachains_shared::Config for Runtime {}
+
+impl parachains_session_info::Config for Runtime {
+	type ValidatorSet = Historical;
+}
+
+impl parachains_inclusion::Config for Runtime {
+	type Event = Event;
+	type DisputesHandler = ParasDisputes;
+	type RewardValidators = parachains_reward_points::RewardValidatorsWithEraPoints<Runtime>;
+}
+
+parameter_types! {
+	pub const ParasUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+}
+
+impl parachains_paras::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = weights::runtime_parachains_paras::WeightInfo<Runtime>;
+	// type WeightInfo = ();
+	type UnsignedPriority = ParasUnsignedPriority;
+	// type NextSessionRotation = Babe;
+	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+}
+
+parameter_types! {
+	pub const FirstMessageFactorPercent: u64 = 100;
+	pub const MaxAuthorities: u32 = 100_000;
+}
+
+impl parachains_ump::Config for Runtime {
+	type Event = Event;
+	// type UmpSink =
+	// 	crate::parachains_ump::XcmSink<xcm_executor::XcmExecutor<xcm_config::XcmConfig>, Runtime>;
+	type UmpSink = ();
+	type FirstMessageFactorPercent = FirstMessageFactorPercent;
+	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type WeightInfo = weights::runtime_parachains_ump::WeightInfo<Runtime>;
+	// type WeightInfo = ();
+}
+
+impl parachains_dmp::Config for Runtime {}
+
+impl parachains_hrmp::Config for Runtime {
+	type Event = Event;
+	type Origin = Origin;
+	type Currency = Balances;
+	type WeightInfo = weights::runtime_parachains_hrmp::WeightInfo<Self>;
+	// type WeightInfo = ();
+}
+
+// impl pallet_babe::Config for Runtime {
+// 	type EpochDuration = EpochDurationInBlocks;
+// 	// type EpochDuration = 10;
+// 	type ExpectedBlockTime = ExpectedBlockTime;
+
+// 	// session module is the trigger
+// 	type EpochChangeTrigger = pallet_babe::ExternalTrigger;
+
+// 	type DisabledValidators = Session;
+
+// 	type KeyOwnerProofSystem = Historical;
+
+// 	type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+// 		KeyTypeId,
+// 		pallet_babe::AuthorityId,
+// 	)>>::Proof;
+
+// 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+// 		KeyTypeId,
+// 		pallet_babe::AuthorityId,
+// 	)>>::IdentificationTuple;
+
+// 	type HandleEquivocation =
+// 		pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
+
+// 	type WeightInfo = ();
+
+// 	type MaxAuthorities = MaxAuthorities;
+
+// }
+
+// impl parachains_paras_inherent::Config for Runtime {
+// 	// type WeightInfo = weights::runtime_parachains_paras_inherent::WeightInfo<Runtime>;
+// 	type WeightInfo = ();
+// }
+
+impl parachains_scheduler::Config for Runtime {}
+
+impl parachains_initializer::Config for Runtime {
+	// type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
+	//type Randomness = ParachainInitializerRandomness;
+	type Randomness = RandomnessCollectiveFlip;
+	// type Randomness = ();
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type WeightInfo = weights::runtime_parachains_initializer::WeightInfo<Runtime>;
+	// type WeightInfo = ();
+}
+
+impl parachains_disputes::Config for Runtime {
+	type Event = Event;
+	type RewardValidators = ();
+	type PunishValidators = ();
+	type WeightInfo = weights::runtime_parachains_disputes::WeightInfo<Runtime>;
+	// type WeightInfo = ();
+}
+
+/// Weight functions for `runtime_common::paras_registrar`.
+pub struct ParasRegistrarWeightInfo<T>(PhantomData<T>);
+impl<T: frame_system::Config> runtime_common::paras_registrar::WeightInfo for ParasRegistrarWeightInfo<T> {
+	// Storage: Registrar NextFreeParaId (r:1 w:1)
+	// Storage: Registrar Paras (r:1 w:1)
+	// Storage: Paras ParaLifecycles (r:1 w:0)
+	fn reserve() -> Weight {
+		(23_252_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(3 as Weight))
+			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+	}
+	// Storage: Registrar Paras (r:1 w:1)
+	// Storage: Paras ParaLifecycles (r:1 w:1)
+	// Storage: Paras PvfActiveVoteMap (r:1 w:0)
+	// Storage: Paras CodeByHash (r:1 w:1)
+	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
+	// Storage: Paras ActionsQueue (r:1 w:1)
+	// Storage: Paras CodeByHashRefs (r:1 w:1)
+	// Storage: Paras CurrentCodeHash (r:0 w:1)
+	// Storage: Paras UpcomingParasGenesis (r:0 w:1)
+	fn register() -> Weight {
+		(8_592_152_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(7 as Weight))
+			.saturating_add(T::DbWeight::get().writes(7 as Weight))
+	}
+	// Storage: Registrar Paras (r:1 w:1)
+	// Storage: Paras ParaLifecycles (r:1 w:1)
+	// Storage: Paras PvfActiveVoteMap (r:1 w:0)
+	// Storage: Paras CodeByHash (r:1 w:1)
+	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
+	// Storage: Paras ActionsQueue (r:1 w:1)
+	// Storage: Paras CodeByHashRefs (r:1 w:1)
+	// Storage: Paras CurrentCodeHash (r:0 w:1)
+	// Storage: Paras UpcomingParasGenesis (r:0 w:1)
+	fn force_register() -> Weight {
+		(8_532_677_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(7 as Weight))
+			.saturating_add(T::DbWeight::get().writes(7 as Weight))
+	}
+	// Storage: Registrar Paras (r:1 w:1)
+	// Storage: Paras ParaLifecycles (r:1 w:1)
+	// Storage: Paras FutureCodeHash (r:1 w:0)
+	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
+	// Storage: Paras ActionsQueue (r:1 w:1)
+	// Storage: Registrar PendingSwap (r:0 w:1)
+	fn deregister() -> Weight {
+		(45_897_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
+			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+	}
+	// Storage: Registrar Paras (r:1 w:0)
+	// Storage: Paras ParaLifecycles (r:2 w:2)
+	// Storage: Registrar PendingSwap (r:1 w:1)
+	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
+	// Storage: Paras ActionsQueue (r:1 w:1)
+	// Storage: Crowdloan Funds (r:2 w:2)
+	// Storage: Slots Leases (r:2 w:2)
+	fn swap() -> Weight {
+		(38_065_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(10 as Weight))
+			.saturating_add(T::DbWeight::get().writes(8 as Weight))
+	}
+}
+
+impl paras_registrar::Config for Runtime {
+	type Event = Event;
+	type Origin = Origin;
+	type Currency = Balances;
+	type OnSwap = (Slots,);
+	type ParaDeposit = ParaDeposit;
+	type DataDepositPerByte = DataDepositPerByte;
+	type WeightInfo = weights::runtime_common_paras_registrar::WeightInfo<Runtime>;
+	// type WeightInfo = ParasRegistrarWeightInfo<Runtime>;
+	// type WeightInfo = ();
+}
+
+parameter_types! {
+	// 6 weeks
+	pub const WEEKS: BlockNumber = 7 * DAYS;
+	pub LeasePeriod: BlockNumber = prod_or_fast!(42 * DAYS, 42 * DAYS, "KSM_LEASE_PERIOD");
+}
+
+/// Weight functions for `runtime_common::slots`.
+pub struct SlotsWeightInfo<T>(PhantomData<T>);
+impl<T: frame_system::Config> runtime_common::slots::WeightInfo for SlotsWeightInfo<T> {
+	// Storage: Slots Leases (r:1 w:1)
+	// Storage: System Account (r:1 w:1)
+	fn force_lease() -> Weight {
+		(23_852_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+	}
+	// Storage: Paras Parachains (r:1 w:0)
+	// Storage: Slots Leases (r:101 w:100)
+	// Storage: Paras ParaLifecycles (r:101 w:101)
+	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
+	// Storage: Paras ActionsQueue (r:1 w:1)
+	// Storage: Registrar Paras (r:100 w:100)
+	fn manage_lease_period_start(c: u32, t: u32, ) -> Weight {
+		(0 as Weight)
+			// Standard Error: 19_000
+			.saturating_add((7_061_000 as Weight).saturating_mul(c as Weight))
+			// Standard Error: 19_000
+			.saturating_add((17_484_000 as Weight).saturating_mul(t as Weight))
+			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
+			.saturating_add(T::DbWeight::get().reads((3 as Weight).saturating_mul(t as Weight)))
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(c as Weight)))
+			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(t as Weight)))
+	}
+	// Storage: Slots Leases (r:1 w:1)
+	// Storage: System Account (r:8 w:8)
+	fn clear_all_leases() -> Weight {
+		(93_598_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(9 as Weight))
+			.saturating_add(T::DbWeight::get().writes(9 as Weight))
+	}
+	// Storage: Slots Leases (r:1 w:0)
+	// Storage: Paras ParaLifecycles (r:1 w:1)
+	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
+	// Storage: Paras ActionsQueue (r:1 w:1)
+	// Storage: Registrar Paras (r:1 w:1)
+	fn trigger_onboard() -> Weight {
+		(22_196_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
+			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+	}
+}
+
+impl slots::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type Registrar = Registrar;
+	type LeasePeriod = LeasePeriod;
+	type LeaseOffset = ();
+	type ForceOrigin = LeaseAdmin;
+	type WeightInfo = SlotsWeightInfo<Runtime>;
+
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -853,6 +1160,10 @@ construct_runtime!(
 	{
 		// Token related
 		System: frame_system,
+
+		// Babe must be before session.
+		// Babe: pallet_babe,
+
 		Timestamp: pallet_timestamp,
 		Scheduler: pallet_scheduler,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
@@ -861,12 +1172,13 @@ construct_runtime!(
 
 		// Token related
 		Balances: pallet_balances,
-		TransactionPayment: pallet_transaction_payment,
+		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 33,
 		Bounties: pallet_bounties,
 		Tips: pallet_tips,
 		Session: pallet_session,
 		Staking: pallet_staking,
 		Historical: pallet_session::historical,
+		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 12,
 
 		VoterList: pallet_bags_list::{Pallet, Call, Storage, Event<T>} = 39,
 
@@ -884,9 +1196,32 @@ construct_runtime!(
 		FellowshipCollective: pallet_ranked_collective::<Instance1>,
 		FellowshipReferenda: pallet_referenda::<Instance2>,
 
-		Origins: pallet_custom_origins,
+		Origins: pallet_custom_origins::{Origin},
+
+		// Parachains pallets. Start indices at 50 to leave room.
+		ParachainsOrigin: parachains_origin::{Pallet, Origin} = 50,
+		Configuration: parachains_configuration::{Pallet, Call, Storage, Config<T>} = 51,
+		ParasShared: parachains_shared::{Pallet, Call, Storage} = 52,
+		ParaInclusion: parachains_inclusion::{Pallet, Call, Storage, Event<T>} = 53,
+		// ParaInherent: parachains_paras_inherent::{Pallet, Call, Storage, Inherent} = 54,
+		ParaScheduler: parachains_scheduler::{Pallet, Storage} = 55,
+		Paras: parachains_paras::{Pallet, Call, Storage, Event, Config} = 56,
+		Initializer: parachains_initializer::{Pallet, Call, Storage} = 57,
+		Dmp: parachains_dmp::{Pallet, Call, Storage} = 58,
+		Ump: parachains_ump::{Pallet, Call, Storage, Event} = 59,
+		Hrmp: parachains_hrmp::{Pallet, Call, Storage, Event<T>, Config} = 60,
+		ParaSessionInfo: parachains_session_info::{Pallet, Storage} = 61,
+		ParasDisputes: parachains_disputes::{Pallet, Call, Storage, Event<T>} = 62,
+
+		// Parachain Onboarding Pallets. Start indices at 70 to leave room.
+		Registrar: paras_registrar::{Pallet, Call, Storage, Event<T>} = 70,
+		Slots: slots::{Pallet, Call, Storage, Event<T>} = 71,
+		// Auctions: auctions::{Pallet, Call, Storage, Event<T>} = 72,
+		// Crowdloan: crowdloan::{Pallet, Call, Storage, Event<T>} = 73,
 
 		Sudo: pallet_sudo,
+		// Pallet for sending XCM,
+		// XcmPallet: pallet_xcm = 99,
 	}
 );
 
