@@ -30,7 +30,7 @@ pub mod purchase;
 pub mod slot_range;
 pub mod slots;
 pub mod traits;
-// pub mod xcm_sender;
+pub mod xcm_sender;
 
 #[cfg(test)]
 mod integration_tests;

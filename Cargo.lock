@@ -2213,6 +2213,7 @@ dependencies = [
  "frame-try-runtime",
  "hex-literal",
  "pallet-aura",
+ "pallet-authority-discovery",
  "pallet-bags-list",
  "pallet-balances",
  "pallet-bounties",
