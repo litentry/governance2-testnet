@@ -26,6 +26,7 @@ frame-system = { version = "4.0.0-dev", default-features = false, git = "https:/
 frame-try-runtime = { version = "0.10.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", optional = true }
 pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+# pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", rev = "ef661427da2f9cec68f871ddf8e2de32bc0402ac" }
 frame-executive = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-arithmetic = { package = "sp-arithmetic", default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -69,6 +70,15 @@ pallet-conviction-voting = { version = "4.0.0-dev", default-features = false, gi
 pallet-bags-list = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-ranked-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-elections-phragmen  = { version = "5.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+
+runtime-common = { package = "polkadot-runtime-common", path = "./common", default-features = false }
+runtime-parachains = { package = "polkadot-runtime-parachains", path = "./parachains", default-features = false }
+primitives = { package = "polkadot-primitives", path = "../primitives", default-features = false }
+
+xcm = { package = "xcm", path = "../xcm", default-features = false }
+xcm-executor = { package = "xcm-executor", path = "../xcm/xcm-executor", default-features = false }
+xcm-builder = { package = "xcm-builder", path = "../xcm/xcm-builder", default-features = false }
+
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }

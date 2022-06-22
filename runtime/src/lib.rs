@@ -26,6 +26,12 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+use runtime_common::{
+	// auctions, claims, crowdloan, impl_runtime_weights, impls::DealWithFees, paras_registrar,
+	// prod_or_fast, slots, BlockHashCount, BlockLength, CurrencyToVote, SlowAdjustingFeeUpdate,
+	prod_or_fast,
+};
+
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types, assert_ok, ord_parameter_types, PalletId, StorageValue,
@@ -63,23 +69,23 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 }
 
-#[macro_export]
-macro_rules! prod_or_fast {
-	($prod:expr, $test:expr) => {
-		if cfg!(feature = "fast-runtime") {
-			$test
-		} else {
-			$prod
-		}
-	};
-	($prod:expr, $test:expr, $env:expr) => {
-		if cfg!(feature = "fast-runtime") {
-			core::option_env!($env).map(|s| s.parse().ok()).flatten().unwrap_or($test)
-		} else {
-			$prod
-		}
-	};
-}
+// #[macro_export]
+// macro_rules! prod_or_fast {
+// 	($prod:expr, $test:expr) => {
+// 		if cfg!(feature = "fast-runtime") {
+// 			$test
+// 		} else {
+// 			$prod
+// 		}
+// 	};
+// 	($prod:expr, $test:expr, $env:expr) => {
+// 		if cfg!(feature = "fast-runtime") {
+// 			core::option_env!($env).map(|s| s.parse().ok()).flatten().unwrap_or($test)
+// 		} else {
+// 			$prod
+// 		}
+// 	};
+// }
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -558,7 +564,13 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+// impl From<pallet_transaction_payment::Event<Runtime>> for Event {
+// 	fn from(event: pallet_transaction_payment::Event<Runtime>) -> Self {
+
+// 	}
+// }
 impl pallet_transaction_payment::Config for Runtime {
+	type Event = Event;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
@@ -842,7 +854,9 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 }
 
-impl pallet_custom_origins::Config for Runtime {}
+impl pallet_custom_origins::Config for Runtime {
+
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -861,7 +875,7 @@ construct_runtime!(
 
 		// Token related
 		Balances: pallet_balances,
-		TransactionPayment: pallet_transaction_payment,
+		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 33,
 		Bounties: pallet_bounties,
 		Tips: pallet_tips,
 		Session: pallet_session,
@@ -884,7 +898,7 @@ construct_runtime!(
 		FellowshipCollective: pallet_ranked_collective::<Instance1>,
 		FellowshipReferenda: pallet_referenda::<Instance2>,
 
-		Origins: pallet_custom_origins,
+		Origins: pallet_custom_origins::{Origin},
 
 		Sudo: pallet_sudo,
 	}
