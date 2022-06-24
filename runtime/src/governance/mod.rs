@@ -55,10 +55,10 @@ pub use fellowship::{FellowshipCollectiveInstance,};
 // 	pub const UndecidingTimeout: BlockNumber = 28 * DAYS;
 // }
 
-// parameter_types! {
-// 	pub const MaxBalance: Balance = Balance::max_value();
-// }
-// pub type TreasurySpender = EitherOf<EnsureRootWithSuccess<AccountId, MaxBalance>, Spender>;
+parameter_types! {
+	pub const MaxBalance: Balance = Balance::max_value();
+}
+pub type TreasurySpender = EitherOf<EnsureRootWithSuccess<AccountId, MaxBalance>, Spender>;
 
 // impl origins::pallet_custom_origins::Config for Runtime {}
 

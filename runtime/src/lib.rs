@@ -75,10 +75,7 @@ use pallet_grandpa::{
 };
 
 pub mod governance;
-use governance::{
-	pallet_custom_origins,
-	LeaseAdmin,
-};
+use governance::{pallet_custom_origins,	LeaseAdmin, TreasurySpender};
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
@@ -302,8 +299,8 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SpendPeriod: BlockNumber = 24 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(1);
+	// pub const SpendPeriod: BlockNumber = 24 * DAYS;
+	// pub const Burn: Permill = Permill::from_percent(1);
 	pub const DataDepositPerByte: Balance = 1 * CENTS;
 
 	pub const BountyDepositBase: Balance = 1 * DOLLARS;
@@ -331,44 +328,22 @@ impl pallet_bounties::Config for Runtime {
 	type WeightInfo = weights::pallet_bounties::WeightInfo<Runtime>;
 }
 
-type ApproveOrigin = EnsureOneOf<
-		EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 5>,
-	>;
-
-type MoreThanHalfCouncil = EnsureOneOf<
-		EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
-	>;
-
 parameter_types! {
-	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 100 * DOLLARS;
-	pub const ProposalBondMaximum: Balance = 500 * DOLLARS;
+	pub const ProposalBondMinimum: Balance = 2000 * CENTS;
+	pub const ProposalBondMaximum: Balance = 1 * GRAND;
+	pub const SpendPeriod: BlockNumber = 6 * DAYS;
+	pub const Burn: Permill = Permill::from_perthousand(2);
+	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+
 	pub const MaxApprovals: u32 = 100;
-}
-pub struct SpendOrigin;
-impl frame_support::traits::EnsureOrigin<Origin> for SpendOrigin {
-	type Success = u128;
-	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
-		Result::<frame_system::RawOrigin<_>, Origin>::from(o).and_then(|o| match o {
-			frame_system::RawOrigin::Root => Ok(u128::max_value()),
-			r => Err(Origin::from(r)),
-		})
-	}
-	#[cfg(feature = "runtime-benchmarks")]
-	fn try_successful_origin() -> Result<Origin, ()> {
-		Ok(Origin::root())
-	}
 }
 
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
-	type ApproveOrigin = ApproveOrigin;
-	type RejectOrigin = MoreThanHalfCouncil;
-	type SpendOrigin = SpendOrigin;
+	type ApproveOrigin = EnsureRoot<AccountId>;
+	type RejectOrigin = EnsureRoot<AccountId>;
 	type Event = Event;
 	type OnSlash = Treasury;
 	type ProposalBond = ProposalBond;
@@ -376,10 +351,12 @@ impl pallet_treasury::Config for Runtime {
 	type ProposalBondMaximum = ProposalBondMaximum;
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
+	// FIXME: type BurnDestination = Society;
 	type BurnDestination = ();
-	type SpendFunds = Bounties;
 	type MaxApprovals = MaxApprovals;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
+	type SpendFunds = Bounties;
+	type SpendOrigin = TreasurySpender;
 }
 
 pub type CouncilCollective = pallet_collective::Instance1;
