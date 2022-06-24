@@ -17,13 +17,13 @@
 //!
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2022-05-25, STEPS: `50`, REPEAT: 20, LOW RANGE: `[]`, HIGH RANGE: `[]`
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("rococo-dev"), DB CACHE: 1024
+//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("kusama-dev"), DB CACHE: 1024
 
 // Executed Command:
 // ./target/production/polkadot
 // benchmark
 // pallet
-// --chain=rococo-dev
+// --chain=kusama-dev
 // --steps=50
 // --repeat=20
 // --pallet=runtime_parachains::initializer
@@ -32,7 +32,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --header=./file_header.txt
-// --output=./runtime/rococo/src/weights/runtime_parachains_initializer.rs
+// --output=./runtime/kusama/src/weights/runtime_parachains_initializer.rs
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
@@ -46,7 +46,7 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> runtime_parachains::initializer::WeightInfo for WeightInfo<T> {
 	// Storage: System Digest (r:1 w:1)
 	fn force_approve(d: u32, ) -> Weight {
-		(2_619_000 as Weight)
+		(3_162_000 as Weight)
 			// Standard Error: 0
 			.saturating_add((2_000 as Weight).saturating_mul(d as Weight))
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))

@@ -17,13 +17,13 @@
 //!
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2022-05-25, STEPS: `50`, REPEAT: 20, LOW RANGE: `[]`, HIGH RANGE: `[]`
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("rococo-dev"), DB CACHE: 1024
+//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("kusama-dev"), DB CACHE: 1024
 
 // Executed Command:
 // ./target/production/polkadot
 // benchmark
 // pallet
-// --chain=rococo-dev
+// --chain=kusama-dev
 // --steps=50
 // --repeat=20
 // --pallet=runtime_parachains::hrmp
@@ -32,7 +32,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --header=./file_header.txt
-// --output=./runtime/rococo/src/weights/runtime_parachains_hrmp.rs
+// --output=./runtime/kusama/src/weights/runtime_parachains_hrmp.rs
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
@@ -45,7 +45,6 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInfo<T> {
 	// Storage: Paras ParaLifecycles (r:2 w:0)
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: Hrmp HrmpOpenChannelRequests (r:1 w:1)
 	// Storage: Hrmp HrmpChannels (r:1 w:0)
 	// Storage: Hrmp HrmpEgressChannelsIndex (r:1 w:0)
@@ -54,31 +53,29 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 	// Storage: Dmp DownwardMessageQueueHeads (r:1 w:1)
 	// Storage: Dmp DownwardMessageQueues (r:1 w:1)
 	fn hrmp_init_open_channel() -> Weight {
-		(31_610_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(10 as Weight))
+		(31_261_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(9 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
 	// Storage: Hrmp HrmpOpenChannelRequests (r:1 w:1)
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: Paras ParaLifecycles (r:1 w:0)
 	// Storage: Hrmp HrmpIngressChannelsIndex (r:1 w:0)
 	// Storage: Hrmp HrmpAcceptedChannelRequestCount (r:1 w:1)
 	// Storage: Dmp DownwardMessageQueueHeads (r:1 w:1)
 	// Storage: Dmp DownwardMessageQueues (r:1 w:1)
 	fn hrmp_accept_open_channel() -> Weight {
-		(28_058_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(7 as Weight))
+		(28_688_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
 	// Storage: Hrmp HrmpChannels (r:1 w:0)
 	// Storage: Hrmp HrmpCloseChannelRequests (r:1 w:1)
 	// Storage: Hrmp HrmpCloseChannelRequestsList (r:1 w:1)
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: Dmp DownwardMessageQueueHeads (r:1 w:1)
 	// Storage: Dmp DownwardMessageQueues (r:1 w:1)
 	fn hrmp_close_channel() -> Weight {
-		(27_214_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+		(26_989_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
 	// Storage: Hrmp HrmpIngressChannelsIndex (r:128 w:127)
@@ -89,10 +86,10 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 	// Storage: Hrmp HrmpOpenChannelRequestCount (r:0 w:1)
 	fn force_clean_hrmp(i: u32, e: u32, ) -> Weight {
 		(0 as Weight)
-			// Standard Error: 17_000
-			.saturating_add((8_719_000 as Weight).saturating_mul(i as Weight))
-			// Standard Error: 17_000
-			.saturating_add((8_793_000 as Weight).saturating_mul(e as Weight))
+			// Standard Error: 15_000
+			.saturating_add((8_807_000 as Weight).saturating_mul(i as Weight))
+			// Standard Error: 15_000
+			.saturating_add((8_812_000 as Weight).saturating_mul(e as Weight))
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(i as Weight)))
 			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(e as Weight)))
@@ -100,7 +97,6 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(i as Weight)))
 			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(e as Weight)))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: Hrmp HrmpOpenChannelRequestsList (r:1 w:0)
 	// Storage: Hrmp HrmpOpenChannelRequests (r:2 w:2)
 	// Storage: Paras ParaLifecycles (r:4 w:0)
@@ -111,9 +107,9 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 	// Storage: Hrmp HrmpChannels (r:0 w:2)
 	fn force_process_hrmp_open(c: u32, ) -> Weight {
 		(0 as Weight)
-			// Standard Error: 25_000
-			.saturating_add((20_601_000 as Weight).saturating_mul(c as Weight))
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+			// Standard Error: 22_000
+			.saturating_add((20_692_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().reads((7 as Weight).saturating_mul(c as Weight)))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes((6 as Weight).saturating_mul(c as Weight)))
@@ -126,8 +122,8 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 	// Storage: Hrmp HrmpChannelContents (r:0 w:2)
 	fn force_process_hrmp_close(c: u32, ) -> Weight {
 		(0 as Weight)
-			// Standard Error: 13_000
-			.saturating_add((11_503_000 as Weight).saturating_mul(c as Weight))
+			// Standard Error: 12_000
+			.saturating_add((11_460_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().reads((3 as Weight).saturating_mul(c as Weight)))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
@@ -137,9 +133,9 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 	// Storage: Hrmp HrmpOpenChannelRequests (r:1 w:1)
 	// Storage: Hrmp HrmpOpenChannelRequestCount (r:1 w:1)
 	fn hrmp_cancel_open_request(c: u32, ) -> Weight {
-		(21_441_000 as Weight)
+		(21_692_000 as Weight)
 			// Standard Error: 0
-			.saturating_add((52_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add((51_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
@@ -148,7 +144,7 @@ impl<T: frame_system::Config> runtime_parachains::hrmp::WeightInfo for WeightInf
 	fn clean_open_channel_requests(c: u32, ) -> Weight {
 		(0 as Weight)
 			// Standard Error: 4_000
-			.saturating_add((3_499_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add((3_510_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))

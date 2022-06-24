@@ -10,13 +10,6 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-// use primitives::v2::{
-// 	AccountIndex, CandidateEvent, CandidateHash,
-// 	CommittedCandidateReceipt, CoreState, DisputeState, GroupRotationInfo,  Id as ParaId,
-// 	InboundDownwardMessage, InboundHrmpMessage, Moment, Nonce, OccupiedCoreAssumption,
-// 	PersistedValidationData, PvfCheckStatement, ScrapedOnChainVotes, SessionInfo,
-// 	ValidationCode, ValidationCodeHash, ValidatorId, ValidatorIndex, ValidatorSignature,
-// };
 
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
@@ -53,8 +46,6 @@ use runtime_parachains::{
 	runtime_api_impl::v2 as parachains_runtime_api_impl, scheduler as parachains_scheduler,
 	session_info as parachains_session_info, shared as parachains_shared, ump as parachains_ump,
 };
-// pub mod xcm_config;
-
 
 mod weights;
 
@@ -85,36 +76,14 @@ use pallet_grandpa::{
 
 pub mod governance;
 use governance::{
-	// old::CouncilCollective,
 	pallet_custom_origins,
-	// AuctionAdmin, GeneralAdmin,
 	LeaseAdmin,
-	// StakingAdmin, TreasurySpender,
 };
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 }
 
-// #[macro_export]
-// macro_rules! prod_or_fast {
-// 	($prod:expr, $test:expr) => {
-// 		if cfg!(feature = "fast-runtime") {
-// 			$test
-// 		} else {
-// 			$prod
-// 		}
-// 	};
-// 	($prod:expr, $test:expr, $env:expr) => {
-// 		if cfg!(feature = "fast-runtime") {
-// 			core::option_env!($env).map(|s| s.parse().ok()).flatten().unwrap_or($test)
-// 		} else {
-// 			$prod
-// 		}
-// 	};
-// }
-
-/// An index to a block.
 pub type BlockNumber = u32;
 pub type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
 
@@ -311,7 +280,7 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
 	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -326,7 +295,7 @@ impl pallet_scheduler::Config for Runtime {
 	type MaximumWeight = ();
 	type ScheduleOrigin = EnsureRoot<AccountId>;
 	type MaxScheduledPerBlock = MaxScheduledPerBlock;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
 	type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
 	type PreimageProvider = ();
 	type NoPreimagePostponement = ();
@@ -359,7 +328,7 @@ impl pallet_bounties::Config for Runtime {
 	type ChildBountyManager = ();
 	type DataDepositPerByte = DataDepositPerByte;
 	type MaximumReasonLength = MaximumReasonLength;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_bounties::WeightInfo<Runtime>;
 }
 
 type ApproveOrigin = EnsureOneOf<
@@ -410,7 +379,7 @@ impl pallet_treasury::Config for Runtime {
 	type BurnDestination = ();
 	type SpendFunds = Bounties;
 	type MaxApprovals = MaxApprovals;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
 }
 
 pub type CouncilCollective = pallet_collective::Instance1;
@@ -429,6 +398,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 	type WeightInfo = ();
 }
 parameter_types! {
@@ -444,6 +414,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type MaxProposals = TechnicalMaxProposals;
 	type MaxMembers = TechnicalMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
 	type WeightInfo = ();
 }
 
@@ -524,7 +495,7 @@ impl pallet_democracy::Config for Runtime {
 	type Scheduler = Scheduler;
 	type PalletsOrigin = OriginCaller;
 	type MaxVotes = MaxVotes;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_democracy::WeightInfo<Runtime>;
 	type MaxProposals = MaxProposals;
 }
 
@@ -541,7 +512,7 @@ impl pallet_tips::Config for Runtime {
 	type TipCountdown = TipCountdown;
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = TipReportDepositBase;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_tips::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -574,7 +545,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type DesiredMembers = DesiredMembers;
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type TermDuration = TermDuration;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -588,14 +559,9 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type ExistentialDeposit = ConstU128<500>;
 	type AccountStore = System;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
 
-// impl From<pallet_transaction_payment::Event<Runtime>> for Event {
-// 	fn from(event: pallet_transaction_payment::Event<Runtime>) -> Self {
-
-// 	}
-// }
 impl pallet_transaction_payment::Config for Runtime {
 	type Event = Event;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
@@ -604,41 +570,6 @@ impl pallet_transaction_payment::Config for Runtime {
 	type LengthToFee = IdentityFee<Balance>;
 	type FeeMultiplierUpdate = ();
 }
-// #[derive(Encode, Debug, Decode, TypeInfo, Eq, PartialEq, Clone, Default, MaxEncodedLen)]
-// pub struct Tally {
-// 	pub ayes: u32,
-// 	pub nays: u32,
-// }
-
-// parameter_types! {
-// 	pub const AlarmInterval: u64 = 1;
-// }
-
-// impl VoteTally<u32> for Tally {
-// 	fn ayes(&self) -> u32 {
-// 		self.ayes
-// 	}
-
-// 	fn turnout(&self) -> Perbill {
-// 		Perbill::from_percent(self.ayes + self.nays)
-// 	}
-
-// 	fn approval(&self) -> Perbill {
-// 		Perbill::from_rational(self.ayes, self.ayes + self.nays)
-// 	}
-
-// 	#[cfg(feature = "runtime-benchmarks")]
-// 	fn unanimity() -> Self {
-// 		Self { ayes: 100, nays: 0 }
-// 	}
-
-// 	#[cfg(feature = "runtime-benchmarks")]
-// 	fn from_requirements(turnout: Perbill, approval: Perbill) -> Self {
-// 		let turnout = turnout.mul_ceil(100u32);
-// 		let ayes = approval.mul_ceil(turnout);
-// 		Self { ayes, nays: turnout - ayes }
-// 	}
-// }
 
 pub struct TracksInfo;
 impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
@@ -692,6 +623,7 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 impl pallet_referenda::Config for Runtime {
 	type Call = Call;
 	type Event = Event;
+	// type WeightInfo = weights::pallet_referenda::WeightInfo<Runtime>;
 	type WeightInfo = ();
 	type Scheduler = Scheduler;
 	type Currency = Balances;
@@ -799,7 +731,7 @@ impl pallet_staking::Config for Runtime {
 	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
 	type BenchmarkingConfig = StakingBenchmarkingConfig;
 	type OnStakerSlash = ();
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
 }
 
 mod bag_thresholds;
@@ -812,7 +744,7 @@ impl pallet_bags_list::Config for Runtime {
 	type ScoreProvider = Staking;
 	type BagThresholds = BagThresholds;
 	type Score = VoteWeight;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_bags_list::WeightInfo<Runtime>;
 }
 
 
@@ -840,7 +772,7 @@ impl pallet_session::Config for Runtime {
 	type SessionManager = ();
 	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = opaque::SessionKeys;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
 }
 
 impl pallet_session::historical::Config for Runtime {
@@ -849,7 +781,7 @@ impl pallet_session::historical::Config for Runtime {
 }
 
 impl pallet_preimage::Config for Runtime {
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
 	type Event = Event;
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
@@ -864,6 +796,7 @@ impl pallet_whitelist::Config for Runtime {
 	type WhitelistOrigin = EnsureRoot<AccountId>;
 	type DispatchWhitelistedOrigin = EnsureRoot<AccountId>;
 	type PreimageProvider = ();
+	// type WeightInfo = weights::pallet_whitelist::WeightInfo<Runtime>;
 	type WeightInfo = ();
 }
 
@@ -872,6 +805,7 @@ parameter_types! {
 }
 
 impl pallet_conviction_voting::Config for Runtime {
+	// type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Runtime>;
 	type WeightInfo = ();
 	type Event = Event;
 	type Currency = Balances;
@@ -881,9 +815,7 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 }
 
-impl pallet_custom_origins::Config for Runtime {
-
-}
+impl pallet_custom_origins::Config for Runtime {}
 
 parameter_types! {
 	pub const ParaDeposit: Balance = 40 * UNIT;
@@ -900,7 +832,6 @@ impl parachains_origin::Config for Runtime {}
 
 impl parachains_configuration::Config for Runtime {
 	type WeightInfo = weights::runtime_parachains_configuration::WeightInfo<Runtime>;
-	// type WeightInfo = ();
 }
 
 impl parachains_shared::Config for Runtime {}
@@ -1082,8 +1013,6 @@ impl paras_registrar::Config for Runtime {
 	type ParaDeposit = ParaDeposit;
 	type DataDepositPerByte = DataDepositPerByte;
 	type WeightInfo = weights::runtime_common_paras_registrar::WeightInfo<Runtime>;
-	// type WeightInfo = ParasRegistrarWeightInfo<Runtime>;
-	// type WeightInfo = ();
 }
 
 parameter_types! {

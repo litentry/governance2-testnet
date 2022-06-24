@@ -17,13 +17,13 @@
 //!
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2022-05-25, STEPS: `50`, REPEAT: 20, LOW RANGE: `[]`, HIGH RANGE: `[]`
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("rococo-dev"), DB CACHE: 1024
+//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("kusama-dev"), DB CACHE: 1024
 
 // Executed Command:
 // ./target/production/polkadot
 // benchmark
 // pallet
-// --chain=rococo-dev
+// --chain=kusama-dev
 // --steps=50
 // --repeat=20
 // --pallet=runtime_common::auctions
@@ -32,7 +32,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --header=./file_header.txt
-// --output=./runtime/rococo/src/weights/runtime_common_auctions.rs
+// --output=./runtime/kusama/src/weights/runtime_common_auctions.rs
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
@@ -47,7 +47,7 @@ impl<T: frame_system::Config> runtime_common::auctions::WeightInfo for WeightInf
 	// Storage: Auctions AuctionInfo (r:1 w:1)
 	// Storage: Auctions AuctionCounter (r:1 w:1)
 	fn new_auction() -> Weight {
-		(11_507_000 as Weight)
+		(11_905_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
@@ -59,7 +59,7 @@ impl<T: frame_system::Config> runtime_common::auctions::WeightInfo for WeightInf
 	// Storage: Auctions ReservedAmounts (r:2 w:2)
 	// Storage: System Account (r:1 w:1)
 	fn bid() -> Weight {
-		(70_051_000 as Weight)
+		(72_703_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(8 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
@@ -67,7 +67,7 @@ impl<T: frame_system::Config> runtime_common::auctions::WeightInfo for WeightInf
 	// Storage: Babe NextRandomness (r:1 w:0)
 	// Storage: Babe EpochStart (r:1 w:0)
 	// Storage: Auctions AuctionCounter (r:1 w:0)
-	// Storage: Auctions Winning (r:600 w:600)
+	// Storage: Auctions Winning (r:3600 w:3600)
 	// Storage: Auctions ReservedAmounts (r:37 w:36)
 	// Storage: System Account (r:36 w:36)
 	// Storage: Slots Leases (r:7 w:7)
@@ -76,17 +76,17 @@ impl<T: frame_system::Config> runtime_common::auctions::WeightInfo for WeightInf
 	// Storage: Paras ActionsQueue (r:1 w:1)
 	// Storage: Registrar Paras (r:1 w:1)
 	fn on_initialize() -> Weight {
-		(2_744_304_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(688 as Weight))
-			.saturating_add(T::DbWeight::get().writes(683 as Weight))
+		(14_704_595_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(3688 as Weight))
+			.saturating_add(T::DbWeight::get().writes(3683 as Weight))
 	}
 	// Storage: Auctions ReservedAmounts (r:37 w:36)
 	// Storage: System Account (r:36 w:36)
-	// Storage: Auctions Winning (r:0 w:600)
+	// Storage: Auctions Winning (r:0 w:3600)
 	// Storage: Auctions AuctionInfo (r:0 w:1)
 	fn cancel_auction() -> Weight {
-		(980_642_000 as Weight)
+		(3_040_370_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(73 as Weight))
-			.saturating_add(T::DbWeight::get().writes(673 as Weight))
+			.saturating_add(T::DbWeight::get().writes(3673 as Weight))
 	}
 }
