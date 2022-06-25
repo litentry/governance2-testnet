@@ -52,7 +52,7 @@ pub use frame_support::{
 		ConstU128, ConstU32, ConstU64, ConstU8, Contains, EnsureOneOf, EqualPrivilegeOnly,
 		Everything, Get, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, MapSuccess,
 		OnInitialize, OriginTrait, Polling, PreimageRecipient, Randomness, SortedMembers,
-		StorageInfo, TryMapSuccess, VoteTally,
+		StorageInfo, TryMapSuccess, VoteTally, ContainsLengthBound,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -373,10 +373,26 @@ parameter_types! {
 	pub const TipReportDepositBase: Balance = 100 * CENTS;
 }
 
+pub struct TestTippers;
+impl SortedMembers<AccountId> for TestTippers {
+	fn sorted_members() -> Vec<AccountId> {
+		// TEN_TO_FOURTEEN.with(|v| v.borrow().clone())
+		vec![]
+	}
+}
+impl ContainsLengthBound for TestTippers {
+	fn max_len() -> usize {
+		0
+	}
+	fn min_len() -> usize {
+		0
+	}
+}
 impl pallet_tips::Config for Runtime {
 	type MaximumReasonLength = MaximumReasonLength;
 	type DataDepositPerByte = DataDepositPerByte;
-	type Tippers = PhragmenElection;
+	// (ksm) type Tippers = PhragmenElection;
+	type Tippers = TestTippers;
 	type TipCountdown = TipCountdown;
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = TipReportDepositBase;
@@ -632,33 +648,33 @@ parameter_types! {
 	pub const CouncilMaxMembers: u32 = 100;
 }
 
-impl pallet_collective::Config<CouncilCollective> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = CouncilMotionDuration;
-	type MaxProposals = CouncilMaxProposals;
-	type MaxMembers = CouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
-	type WeightInfo = ();
-}
+// impl pallet_collective::Config<CouncilCollective> for Runtime {
+// 	type Origin = Origin;
+// 	type Proposal = Call;
+// 	type Event = Event;
+// 	type MotionDuration = CouncilMotionDuration;
+// 	type MaxProposals = CouncilMaxProposals;
+// 	type MaxMembers = CouncilMaxMembers;
+// 	type DefaultVote = pallet_collective::PrimeDefaultVote;
+// 	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
+// 	type WeightInfo = ();
+// }
 parameter_types! {
 	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
 	pub const TechnicalMaxProposals: u32 = 100;
 	pub const TechnicalMaxMembers: u32 = 100;
 }
-impl pallet_collective::Config<TechnicalCollective> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = TechnicalMotionDuration;
-	type MaxProposals = TechnicalMaxProposals;
-	type MaxMembers = TechnicalMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
-	type WeightInfo = ();
-}
+// impl pallet_collective::Config<TechnicalCollective> for Runtime {
+// 	type Origin = Origin;
+// 	type Proposal = Call;
+// 	type Event = Event;
+// 	type MotionDuration = TechnicalMotionDuration;
+// 	type MaxProposals = TechnicalMaxProposals;
+// 	type MaxMembers = TechnicalMaxMembers;
+// 	type DefaultVote = pallet_collective::PrimeDefaultVote;
+// 	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
+// 	type WeightInfo = ();
+// }
 
 parameter_types! {
 	pub LaunchPeriod: BlockNumber = prod_or_fast!(28 * DAYS, 1, "DOT_LAUNCH_PERIOD");
@@ -736,23 +752,23 @@ parameter_types! {
 	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
 }
 
-impl pallet_elections_phragmen::Config for Runtime {
-	type Event = Event;
-	type PalletId = PhragmenElectionPalletId;
-	type Currency = Balances;
-	type ChangeMembers = Council;
-	type InitializeMembers = Council;
-	type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
-	type CandidacyBond = CandidacyBond;
-	type VotingBondBase = VotingBondBase;
-	type VotingBondFactor = VotingBondFactor;
-	type LoserCandidate = Treasury;
-	type KickedMember = Treasury;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type TermDuration = TermDuration;
-	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
-}
+// impl pallet_elections_phragmen::Config for Runtime {
+// 	type Event = Event;
+// 	type PalletId = PhragmenElectionPalletId;
+// 	type Currency = Balances;
+// 	// type ChangeMembers = Council;
+// 	// type InitializeMembers = Council;
+// 	type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+// 	type CandidacyBond = CandidacyBond;
+// 	type VotingBondBase = VotingBondBase;
+// 	type VotingBondFactor = VotingBondFactor;
+// 	type LoserCandidate = Treasury;
+// 	type KickedMember = Treasury;
+// 	type DesiredMembers = DesiredMembers;
+// 	type DesiredRunnersUp = DesiredRunnersUp;
+// 	type TermDuration = TermDuration;
+// 	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Parachain Stuff
@@ -986,9 +1002,9 @@ construct_runtime!(
 		Origins: pallet_custom_origins::{Origin},
 		// Legacy:
 		Democracy: pallet_democracy,
-		Council: pallet_collective::<Instance1>,
-		TechnicalCommittee: pallet_collective::<Instance2>,
-		PhragmenElection: pallet_elections_phragmen,
+		// Council: pallet_collective::<Instance1>,
+		// TechnicalCommittee: pallet_collective::<Instance2>,
+		// PhragmenElection: pallet_elections_phragmen,
 		// New:
 		Whitelist: pallet_whitelist,
 		Treasury: pallet_treasury,

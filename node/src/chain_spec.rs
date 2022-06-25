@@ -176,8 +176,8 @@ fn testnet_genesis(
 		configuration: Default::default(),
 		paras: Default::default(),
 		// Legacy governance pallets
-		council: Default::default(),
-		technical_committee: Default::default(),
-		phragmen_election: Default::default(),
+		// council: Default::default(),
+		// technical_committee: Default::default(),
+		// phragmen_election: Default::default(),
 	}
 }
