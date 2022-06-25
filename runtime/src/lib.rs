@@ -836,22 +836,21 @@ impl parachains_hrmp::Config for Runtime {
 
 impl parachains_scheduler::Config for Runtime {}
 
-impl parachains_initializer::Config for Runtime {
-	// type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
-	//type Randomness = ParachainInitializerRandomness;
-	type Randomness = RandomnessCollectiveFlip;
-	// type Randomness = ();
-	type ForceOrigin = EnsureRoot<AccountId>;
-	type WeightInfo = weights::runtime_parachains_initializer::WeightInfo<Runtime>;
-	// type WeightInfo = ();
-}
+// impl parachains_initializer::Config for Runtime {
+// 	// type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
+// 	//type Randomness = ParachainInitializerRandomness;
+// 	type Randomness = RandomnessCollectiveFlip;
+// 	// type Randomness = ();
+// 	type ForceOrigin = EnsureRoot<AccountId>;
+// 	type WeightInfo = weights::runtime_parachains_initializer::WeightInfo<Runtime>;
+// 	// type WeightInfo = ();
+// }
 
 impl parachains_disputes::Config for Runtime {
 	type Event = Event;
 	type RewardValidators = ();
 	type PunishValidators = ();
 	type WeightInfo = weights::runtime_parachains_disputes::WeightInfo<Runtime>;
-	// type WeightInfo = ();
 }
 
 /// Weight functions for `runtime_common::paras_registrar`.
@@ -1076,7 +1075,7 @@ construct_runtime!(
 		ParaInclusion: parachains_inclusion::{Pallet, Call, Storage, Event<T>} = 53,
 		ParaScheduler: parachains_scheduler::{Pallet, Storage} = 55,
 		Paras: parachains_paras::{Pallet, Call, Storage, Event, Config} = 56,
-		Initializer: parachains_initializer::{Pallet, Call, Storage} = 57,
+		// Initializer: parachains_initializer::{Pallet, Call, Storage} = 57,
 		Dmp: parachains_dmp::{Pallet, Call, Storage} = 58,
 		Ump: parachains_ump::{Pallet, Call, Storage, Event} = 59,
 		Hrmp: parachains_hrmp::{Pallet, Call, Storage, Event<T>, Config} = 60,
