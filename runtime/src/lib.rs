@@ -789,11 +789,11 @@ impl parachains_session_info::Config for Runtime {
 	type ValidatorSet = Historical;
 }
 
-impl parachains_inclusion::Config for Runtime {
-	type Event = Event;
-	type DisputesHandler = ParasDisputes;
-	type RewardValidators = parachains_reward_points::RewardValidatorsWithEraPoints<Runtime>;
-}
+// impl parachains_inclusion::Config for Runtime {
+// 	type Event = Event;
+// 	type DisputesHandler = ParasDisputes;
+// 	type RewardValidators = parachains_reward_points::RewardValidatorsWithEraPoints<Runtime>;
+// }
 
 parameter_types! {
 	pub const ParasUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
@@ -846,12 +846,13 @@ impl parachains_scheduler::Config for Runtime {}
 // 	// type WeightInfo = ();
 // }
 
-impl parachains_disputes::Config for Runtime {
-	type Event = Event;
-	type RewardValidators = ();
-	type PunishValidators = ();
-	type WeightInfo = weights::runtime_parachains_disputes::WeightInfo<Runtime>;
-}
+// impl parachains_disputes::Config for Runtime {
+// 	type Event = Event;
+// 	type RewardValidators = ();
+// 	type PunishValidators = ();
+// 	type WeightInfo = weights::runtime_parachains_disputes::WeightInfo<Runtime>;
+
+// }
 
 /// Weight functions for `runtime_common::paras_registrar`.
 pub struct ParasRegistrarWeightInfo<T>(PhantomData<T>);
@@ -1072,7 +1073,7 @@ construct_runtime!(
 		ParachainsOrigin: parachains_origin::{Pallet, Origin} = 50,
 		Configuration: parachains_configuration::{Pallet, Call, Storage, Config<T>} = 51,
 		ParasShared: parachains_shared::{Pallet, Call, Storage} = 52,
-		ParaInclusion: parachains_inclusion::{Pallet, Call, Storage, Event<T>} = 53,
+		// ParaInclusion: parachains_inclusion::{Pallet, Call, Storage, Event<T>} = 53,
 		ParaScheduler: parachains_scheduler::{Pallet, Storage} = 55,
 		Paras: parachains_paras::{Pallet, Call, Storage, Event, Config} = 56,
 		// Initializer: parachains_initializer::{Pallet, Call, Storage} = 57,
@@ -1080,7 +1081,7 @@ construct_runtime!(
 		Ump: parachains_ump::{Pallet, Call, Storage, Event} = 59,
 		Hrmp: parachains_hrmp::{Pallet, Call, Storage, Event<T>, Config} = 60,
 		ParaSessionInfo: parachains_session_info::{Pallet, Storage} = 61,
-		ParasDisputes: parachains_disputes::{Pallet, Call, Storage, Event<T>} = 62,
+		// ParasDisputes: parachains_disputes::{Pallet, Call, Storage, Event<T>} = 62,
 
 		// Parachain Onboarding Pallets. Start indices at 70 to leave room.
 		Registrar: paras_registrar::{Pallet, Call, Storage, Event<T>} = 70,
