@@ -6,18 +6,18 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use codec::{Decode, Encode};
+// use codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 
 use sp_runtime::{
 	create_runtime_str,
-	curve::PiecewiseLinear,
+	// curve::PiecewiseLinear,
 	generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, ConstU16, IdentifyAccount, NumberFor,
-		OpaqueKeys, Replace, TypedGet, Verify,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor,
+		OpaqueKeys, TypedGet, Verify,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature, Perbill, Percent, Permill,
@@ -36,7 +36,7 @@ use sp_version::RuntimeVersion;
 mod bag_thresholds;
 use runtime_common::{
 	auctions, paras_registrar, prod_or_fast, slots,
-	SlowAdjustingFeeUpdate, StakingBenchmarkingConfig};
+	SlowAdjustingFeeUpdate};
 use runtime_parachains::{
 	configuration as parachains_configuration,
 	origin as parachains_origin, paras as parachains_paras,
@@ -49,7 +49,7 @@ mod weights;
 pub use frame_support::{
 	assert_ok, construct_runtime, ord_parameter_types, parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, Contains, EnsureOneOf, EqualPrivilegeOnly,
+		ConstU128, ConstU32, ConstU64, ConstU8, Contains, EqualPrivilegeOnly,
 		Everything, Get, InstanceFilter, KeyOwnerProofSystem, LockIdentifier, MapSuccess,
 		OnInitialize, OriginTrait, Polling, PreimageRecipient, Randomness, SortedMembers,
 		StorageInfo, TryMapSuccess, VoteTally, ContainsLengthBound,
@@ -62,7 +62,7 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 
-use frame_election_provider_support::{onchain, SequentialPhragmen, VoteWeight};
+use frame_election_provider_support::{onchain, SequentialPhragmen};
 
 pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned,};
 pub use pallet_balances::Call as BalancesCall;
@@ -640,8 +640,8 @@ impl pallet_staking::Config for Runtime {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-pub type CouncilCollective = pallet_collective::Instance1;
-pub type TechnicalCollective = pallet_collective::Instance2;
+// pub type CouncilCollective = pallet_collective::Instance1;
+// pub type TechnicalCollective = pallet_collective::Instance2;
 parameter_types! {
 	pub CouncilMotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 2 * MINUTES, "DOT_MOTION_DURATION");
 	pub const CouncilMaxProposals: u32 = 100;

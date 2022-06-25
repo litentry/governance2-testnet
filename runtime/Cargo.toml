@@ -16,7 +16,6 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "3.1.2", default-features = false, features = ["derive"] }
 scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
 
-#sp-mmr-primitives = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 pallet-aura = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -64,20 +63,17 @@ pallet-scheduler = { version = "4.0.0-dev", default-features = false, git = "htt
 pallet-staking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-bounties = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-preimage = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-whitelist = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-conviction-voting = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-bags-list = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-ranked-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-pallet-elections-phragmen  = { version = "5.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 runtime-common = { package = "polkadot-runtime-common", path = "./common", default-features = false }
 runtime-parachains = { package = "polkadot-runtime-parachains", path = "./parachains", default-features = false }
-primitives = { package = "polkadot-primitives", path = "../primitives", default-features = false }
+# primitives = { package = "polkadot-primitives", path = "../primitives", default-features = false }
 
-xcm = { package = "xcm", path = "../xcm", default-features = false }
-xcm-executor = { package = "xcm-executor", path = "../xcm/xcm-executor", default-features = false }
-xcm-builder = { package = "xcm-builder", path = "../xcm/xcm-builder", default-features = false }
+# xcm = { package = "xcm", path = "../xcm", default-features = false }
+# xcm-executor = { package = "xcm-executor", path = "../xcm/xcm-executor", default-features = false }
+# xcm-builder = { package = "xcm-builder", path = "../xcm/xcm-builder", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -110,12 +106,12 @@ std = [
 	"pallet-staking/std",
 	"pallet-bounties/std",
 	"pallet-session/std",
-	"pallet-collective/std",
-	"pallet-preimage/std",
-	 "pallet-whitelist/std",
+	# "pallet-collective/std",
+	# "pallet-preimage/std",
+	"pallet-whitelist/std",
 	"pallet-ranked-collective/std",
 	"pallet-conviction-voting/std",
-	"pallet-elections-phragmen/std",
+	# "pallet-elections-phragmen/std",
 	"pallet-bags-list/std",
 	"sp-api/std",
 	"sp-block-builder/std",
@@ -130,11 +126,9 @@ std = [
 	"sp-version/std",
 	"sp-staking/std",
 	"sp-npos-elections/std",
-	"xcm/std",
-	"xcm-executor/std",
-	"xcm-builder/std",
-#	"primitives/std",
-	#		"sp-mmr-primitives/std",
+	# "xcm/std",
+	# "xcm-executor/std",
+	# "xcm-builder/std",
 ]
 
 runtime-benchmarks = [
@@ -152,11 +146,11 @@ runtime-benchmarks = [
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-staking/runtime-benchmarks",
 	"pallet-bounties/runtime-benchmarks",
-	"pallet-collective/runtime-benchmarks",
-	"pallet-preimage/runtime-benchmarks",
+	# "pallet-collective/runtime-benchmarks",
+	# "pallet-preimage/runtime-benchmarks",
 	"pallet-whitelist/runtime-benchmarks",
 	"pallet-ranked-collective/runtime-benchmarks",
-	"pallet-elections-phragmen/runtime-benchmarks",
+	# "pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-conviction-voting/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
@@ -178,10 +172,10 @@ try-runtime = [
 	"pallet-scheduler/try-runtime",
 	"pallet-staking/try-runtime",
 	"pallet-bounties/try-runtime",
-	"pallet-collective/try-runtime",
-	"pallet-elections-phragmen/try-runtime",
+	# "pallet-collective/try-runtime",
+	# "pallet-elections-phragmen/try-runtime",
 	"pallet-session/try-runtime",
-	"pallet-preimage/try-runtime",
+	# "pallet-preimage/try-runtime",
 	"pallet-whitelist/try-runtime",
 	# "pallet-ranked-collective/try-runtime",
 	# "pallet-conviction-voting/try-runtime",
