@@ -35,16 +35,12 @@ use sp_version::RuntimeVersion;
 
 mod bag_thresholds;
 use runtime_common::{
-	auctions, impls::DealWithFees, paras_registrar, prod_or_fast, slots,
-	// CurrencyToVote,
+	auctions, paras_registrar, prod_or_fast, slots,
 	SlowAdjustingFeeUpdate, StakingBenchmarkingConfig};
 use runtime_parachains::{
-	configuration as parachains_configuration, disputes as parachains_disputes,
-	dmp as parachains_dmp, hrmp as parachains_hrmp, inclusion as parachains_inclusion,
-	initializer as parachains_initializer, origin as parachains_origin, paras as parachains_paras,
-	paras_inherent as parachains_paras_inherent, reward_points as parachains_reward_points,
-	runtime_api_impl::v2 as parachains_runtime_api_impl, scheduler as parachains_scheduler,
-	session_info as parachains_session_info, shared as parachains_shared, ump as parachains_ump,
+	configuration as parachains_configuration,
+	origin as parachains_origin, paras as parachains_paras,
+	shared as parachains_shared,
 };
 
 mod weights;
@@ -68,7 +64,7 @@ pub use frame_support::{
 
 use frame_election_provider_support::{onchain, SequentialPhragmen, VoteWeight};
 
-pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
+pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned,};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 
@@ -78,7 +74,10 @@ use pallet_grandpa::{
 use pallet_transaction_payment::CurrencyAdapter;
 
 pub mod governance;
-use governance::{pallet_custom_origins, AuctionAdmin, LeaseAdmin, StakingAdmin, TreasurySpender};
+use governance::{
+	pallet_custom_origins, AuctionAdmin,
+	FellowshipCollectiveInstance, FellowshipReferendaInstance,
+	FellowshipAdmin, LeaseAdmin, StakingAdmin, TreasurySpender};
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
@@ -683,52 +682,37 @@ impl pallet_democracy::Config for Runtime {
 	type VotingPeriod = VotingPeriod;
 	type MinimumDeposit = MinimumDeposit;
 	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
+	// FIXME: Need check upstream settings
+	type ExternalOrigin = EnsureRoot<AccountId>;
 	/// A 60% super-majority can have the next scheduled referendum be a straight majority-carries
 	/// vote.
-	type ExternalMajorityOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 5>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
+	// FIXME: Need check upstream settings
+	type ExternalMajorityOrigin = EnsureRoot<AccountId>;
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
 	/// (NTB) vote.
-	type ExternalDefaultOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
+	// FIXME: Need check upstream settings
+	type ExternalDefaultOrigin = EnsureRoot<AccountId>;
 	/// Two thirds of the technical committee can have an `ExternalMajority/ExternalDefault` vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 2, 3>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
-	type InstantOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 1, 1>,
-		frame_system::EnsureRoot<AccountId>,
-	>;
+	// FIXME: Need check upstream settings
+	type FastTrackOrigin = EnsureRoot<AccountId>;
+	// FIXME: Need check upstream settings
+	type InstantOrigin = EnsureRoot<AccountId>;
 	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
-	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
-		EnsureRoot<AccountId>,
-	>;
-	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
-	// Root must agree.
-	type CancelProposalOrigin = EnsureOneOf<
-		pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 1, 1>,
-		EnsureRoot<AccountId>,
-	>;
+	// FIXME: Need check upstream settings
+	type CancellationOrigin = EnsureRoot<AccountId>;
+	// FIXME: Need check upstream settings
+	type CancelProposalOrigin = EnsureRoot<AccountId>;
 	type BlacklistOrigin = EnsureRoot<AccountId>;
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+	// FIXME: Need check upstream settings
+	type VetoOrigin = pallet_ranked_collective::EnsureMember<Runtime, FellowshipCollectiveInstance, 1>;
 	type CooloffPeriod = CooloffPeriod;
 	type PreimageByteDeposit = PreimageByteDeposit;
-	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	// FIXME: Need check upstream settings
+	type OperationalPreimageOrigin = pallet_ranked_collective::EnsureMember<Runtime, FellowshipCollectiveInstance, 1>;
 	type Slash = Treasury;
 	type Scheduler = Scheduler;
 	type PalletsOrigin = OriginCaller;
