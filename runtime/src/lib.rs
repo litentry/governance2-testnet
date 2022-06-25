@@ -6,7 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
@@ -34,7 +34,10 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 mod bag_thresholds;
-use runtime_common::{auctions, impls::DealWithFees, paras_registrar, prod_or_fast, slots};
+use runtime_common::{
+	auctions, impls::DealWithFees, paras_registrar, prod_or_fast, slots,
+	// CurrencyToVote,
+	SlowAdjustingFeeUpdate, StakingBenchmarkingConfig};
 use runtime_parachains::{
 	configuration as parachains_configuration, disputes as parachains_disputes,
 	dmp as parachains_dmp, hrmp as parachains_hrmp, inclusion as parachains_inclusion,
@@ -58,6 +61,7 @@ pub use frame_support::{
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
+		ConstantMultiplier,
 	},
 	PalletId, StorageValue,
 };
@@ -74,7 +78,7 @@ use pallet_grandpa::{
 use pallet_transaction_payment::CurrencyAdapter;
 
 pub mod governance;
-use governance::{pallet_custom_origins, LeaseAdmin, StakingAdmin, TreasurySpender};
+use governance::{pallet_custom_origins, AuctionAdmin, LeaseAdmin, StakingAdmin, TreasurySpender};
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
@@ -448,6 +452,178 @@ impl pallet_bags_list::Config for Runtime {
 	type Score = sp_npos_elections::VoteWeight;
 }
 
+// DONE
+parameter_types! {
+	pub const TransactionByteFee: Balance = 10 * MILLICENTS;
+	/// This value increases the priority of `Operational` transactions by adding
+	/// a "virtual tip" that's equal to the `OperationalFeeMultiplier * final_fee`.
+	pub const OperationalFeeMultiplier: u8 = 5;
+}
+
+impl pallet_transaction_payment::Config for Runtime {
+	type Event = Event;
+	// (ksm) type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Self>>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+	type OperationalFeeMultiplier = OperationalFeeMultiplier;
+	// (ksm) type WeightToFee = WeightToFee;
+	type WeightToFee = IdentityFee<Balance>;
+	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
+	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
+}
+
+// DONE
+parameter_types! {
+	pub const PreimageMaxSize: u32 = 4096 * 1024;
+	pub const PreimageBaseDeposit: Balance = deposit(2, 64);
+	pub const PreimageByteDeposit: Balance = deposit(0, 1);
+}
+
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
+	type Event = Event;
+	type Currency = Balances;
+	type ManagerOrigin = EnsureRoot<AccountId>;
+	type MaxSize = PreimageMaxSize;
+	type BaseDeposit = PreimageBaseDeposit;
+	type ByteDeposit = PreimageByteDeposit;
+}
+
+// DONE
+parameter_types! {
+	pub const Period: u32 = 6 * HOURS;
+	pub const Offset: u32 = 0;
+}
+
+impl pallet_session::Config for Runtime {
+	type Event = Event;
+	type ValidatorId = AccountId;
+	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	// (ksm) type ShouldEndSession = Babe
+	// (ksm) type NextSessionRotation = Babe
+	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+	// (ksm) type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type SessionManager = ();
+	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = opaque::SessionKeys;
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
+}
+
+// DONE
+impl pallet_session::historical::Config for Runtime {
+	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+}
+
+
+// DOING
+// fn era_payout(
+// 	total_staked: Balance,
+// 	non_gilt_issuance: Balance,
+// 	max_annual_inflation: Perquintill,
+// 	period_fraction: Perquintill,
+// 	auctioned_slots: u64,
+// ) -> (Balance, Balance) {
+// 	// use pallet_staking_reward_fn::compute_inflation;
+// 	// use sp_arithmetic::traits::Saturating;
+
+// 	// let min_annual_inflation = Perquintill::from_rational(25u64, 1000u64);
+// 	// let delta_annual_inflation = max_annual_inflation.saturating_sub(min_annual_inflation);
+
+// 	// // 30% reserved for up to 60 slots.
+// 	// let auction_proportion = Perquintill::from_rational(auctioned_slots.min(60), 200u64);
+
+// 	// // Therefore the ideal amount at stake (as a percentage of total issuance) is 75% less the amount that we expect
+// 	// // to be taken up with auctions.
+// 	// let ideal_stake = Perquintill::from_percent(75).saturating_sub(auction_proportion);
+
+// 	// let stake = Perquintill::from_rational(total_staked, non_gilt_issuance);
+// 	// let falloff = Perquintill::from_percent(5);
+// 	// let adjustment = compute_inflation(stake, ideal_stake, falloff);
+// 	// let staking_inflation =
+// 	// 	min_annual_inflation.saturating_add(delta_annual_inflation * adjustment);
+
+// 	// let max_payout = period_fraction * max_annual_inflation * non_gilt_issuance;
+// 	// let staking_payout = (period_fraction * staking_inflation) * non_gilt_issuance;
+// 	// let rest = max_payout.saturating_sub(staking_payout);
+
+// 	// let other_issuance = non_gilt_issuance.saturating_sub(total_staked);
+// 	// if total_staked > other_issuance {
+// 	// 	let _cap_rest = Perquintill::from_rational(other_issuance, total_staked) * staking_payout;
+// 	// 	// We don't do anything with this, but if we wanted to, we could introduce a cap on the treasury amount
+// 	// 	// with: `rest = rest.min(cap_rest);`
+// 	// }
+// 	// (staking_payout, rest)
+
+// 	(deposit(0, 32), deposit(0, 32))
+// }
+
+pub struct EraPayout;
+impl pallet_staking::EraPayout<Balance> for EraPayout {
+	fn era_payout(
+		total_staked: Balance,
+		_total_issuance: Balance,
+		era_duration_millis: u64,
+	) -> (Balance, Balance) {
+		// TODO: #3011 Update with proper auctioned slots tracking.
+		// This should be fine for the first year of parachains.
+		// let auctioned_slots: u64 = auctions::Pallet::<Runtime>::auction_counter().into();
+		// const MAX_ANNUAL_INFLATION: Perquintill = Perquintill::from_percent(10);
+		// const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
+
+		// era_payout(
+		// 	total_staked,
+		// 	Gilt::issuance().non_gilt,
+		// 	MAX_ANNUAL_INFLATION,
+		// 	Perquintill::from_rational(era_duration_millis, MILLISECONDS_PER_YEAR),
+		// 	auctioned_slots,
+		// )
+		(deposit(0, 32), deposit(0, 32))
+	}
+}
+
+parameter_types! {
+	// Six sessions in an era (6 hours).
+	pub const SessionsPerEra: SessionIndex = 6;
+	// 28 eras for unbonding (7 days).
+	pub const BondingDuration: sp_staking::EraIndex = 28;
+	// 27 eras in which slashes can be cancelled (slightly less than 7 days).
+	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
+	pub const MaxNominatorRewardedPerValidator: u32 = 256;
+	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
+	// (ksm) pub const MaxNominations: u32 = <NposCompactSolution24 as NposSolution>::LIMIT as u32;
+	pub const MaxNominations: u32 = 24;
+}
+impl pallet_staking::Config for Runtime {
+	type MaxNominations = MaxNominations;
+	type Currency = Balances;
+	type CurrencyBalance = Balance;
+	type UnixTime = Timestamp;
+	type CurrencyToVote = CurrencyToVote;
+	// (ksm) type ElectionProvider = ElectionProviderMultiPhase;
+	type ElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	type RewardRemainder = Treasury;
+	type Event = Event;
+	type Slash = Treasury;
+	type Reward = ();
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	type SlashDeferDuration = SlashDeferDuration;
+	// A majority of the council or root can cancel the slash.
+	type SlashCancelOrigin = StakingAdmin;
+	type SessionInterface = Self;
+	type EraPayout = EraPayout;
+	type NextNewSession = Session;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
+	type VoterList = VoterList;
+	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
+	type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
+	type OnStakerSlash = ();
+	type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 pub type CouncilCollective = pallet_collective::Instance1;
 pub type TechnicalCollective = pallet_collective::Instance2;
@@ -592,161 +768,6 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type TermDuration = TermDuration;
 	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
-}
-
-// DOING
-parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MILLICENTS;
-	/// This value increases the priority of `Operational` transactions by adding
-	/// a "virtual tip" that's equal to the `OperationalFeeMultiplier * final_fee`.
-	pub const OperationalFeeMultiplier: u8 = 5;
-}
-
-impl pallet_transaction_payment::Config for Runtime {
-	type Event = Event;
-	// FIXME: type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Self>>;
-	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
-	type OperationalFeeMultiplier = OperationalFeeMultiplier;
-	// FIXME: type WeightToFee = WeightToFee;
-	type WeightToFee = IdentityFee<Balance>;
-	// FIXME: type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
-	type LengthToFee = IdentityFee<Balance>;
-	// FIXME: type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-	type FeeMultiplierUpdate = ();
-}
-
-// TODO
-pub struct TestShouldEndSession;
-impl pallet_session::ShouldEndSession<u32> for TestShouldEndSession {
-	fn should_end_session(now: u32) -> bool {
-		true
-	}
-}
-pub struct TestValidatorIdOf;
-impl TestValidatorIdOf {}
-
-impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for TestValidatorIdOf {
-	fn convert(x: AccountId) -> Option<AccountId> {
-		Some(x)
-	}
-}
-// TODO:
-parameter_types! {
-	pub const Period: u32 = 6 * HOURS;
-	pub const Offset: u32 = 0;
-}
-
-impl pallet_session::Config for Runtime {
-	type Event = Event;
-	type ValidatorId = AccountId;
-	type ValidatorIdOf = pallet_staking::StashOf<Self>;
-	// type ValidatorIdOf = TestValidatorIdOf;
-	// FIXME: type ShouldEndSession = Babe
-	// FIXME: type NextSessionRotation = Babe
-	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-	// FIXME: type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
-	type SessionManager = ();
-	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
-	type Keys = opaque::SessionKeys;
-	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
-}
-
-impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
-}
-
-// DONE
-parameter_types! {
-	pub const PreimageMaxSize: u32 = 4096 * 1024;
-	pub const PreimageBaseDeposit: Balance = deposit(2, 64);
-	pub const PreimageByteDeposit: Balance = deposit(0, 1);
-}
-
-impl pallet_preimage::Config for Runtime {
-	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
-	type Event = Event;
-	type Currency = Balances;
-	type ManagerOrigin = EnsureRoot<AccountId>;
-	type MaxSize = PreimageMaxSize;
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
-}
-
-// DOING
-pub struct EraPayout;
-impl pallet_staking::EraPayout<Balance> for EraPayout {
-	fn era_payout(
-		total_staked: Balance,
-		_total_issuance: Balance,
-		era_duration_millis: u64,
-	) -> (Balance, Balance) {
-		// TODO: #3011 Update with proper auctioned slots tracking.
-		// This should be fine for the first year of parachains.
-		// let auctioned_slots: u64 = auctions::Pallet::<Runtime>::auction_counter().into();
-		// const MAX_ANNUAL_INFLATION: Perquintill = Perquintill::from_percent(10);
-		// const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
-
-		// era_payout(
-		// 	total_staked,
-		// 	Gilt::issuance().non_gilt,
-		// 	MAX_ANNUAL_INFLATION,
-		// 	Perquintill::from_rational(era_duration_millis, MILLISECONDS_PER_YEAR),
-		// 	auctioned_slots,
-		// )
-		(deposit(0, 32), deposit(0, 32))
-	}
-}
-pub struct StakingBenchmarkingConfig;
-impl pallet_staking::BenchmarkingConfig for StakingBenchmarkingConfig {
-	type MaxValidators = ConstU32<1000>;
-	type MaxNominators = ConstU32<1000>;
-}
-
-parameter_types! {
-	// Six sessions in an era (6 hours).
-	pub const SessionsPerEra: SessionIndex = 6;
-	// 28 eras for unbonding (7 days).
-	pub const BondingDuration: sp_staking::EraIndex = 28;
-	// 27 eras in which slashes can be cancelled (slightly less than 7 days).
-	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
-	pub const MaxNominatorRewardedPerValidator: u32 = 256;
-	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
-	// pub const MaxNominations: u32 = <NposCompactSolution24 as NposSolution>::LIMIT as u32;
-	pub const MaxNominations: u32 = 24;
-}
-impl pallet_staking::Config for Runtime {
-	type MaxNominations = MaxNominations;
-	type Currency = Balances;
-	type CurrencyBalance = Balance;
-	type UnixTime = Timestamp;
-	// FIXME: type CurrencyToVote = CurrencyToVote;
-	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
-	// FIXME: type ElectionProvider = ElectionProviderMultiPhase;
-	type ElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
-	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
-	type RewardRemainder = Treasury;
-	type Event = Event;
-	type Slash = Treasury;
-	type Reward = ();
-	type SessionsPerEra = SessionsPerEra;
-	type BondingDuration = BondingDuration;
-	type SlashDeferDuration = SlashDeferDuration;
-	// A majority of the council or root can cancel the slash.
-	type SlashCancelOrigin = StakingAdmin;
-	// type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
-	type SessionInterface = Self;
-	type EraPayout = EraPayout;
-	type NextNewSession = Session;
-	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
-	type VoterList = VoterList;
-	type MaxUnlockingChunks = frame_support::traits::ConstU32<32>;
-	// FIXME: type BenchmarkingConfig = runtime_common::StakingBenchmarkingConfig;
-	type BenchmarkingConfig = StakingBenchmarkingConfig;
-	type OnStakerSlash = ();
-	type WeightInfo = weights::pallet_staking::WeightInfo<Runtime>;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -973,6 +994,33 @@ impl slots::Config for Runtime {
 	type WeightInfo = SlotsWeightInfo<Runtime>;
 }
 
+parameter_types! {
+	// The average auction is 7 days long, so this will be 70% for ending period.
+	// 5 Days = 72000 Blocks @ 6 sec per block
+	pub const EndingPeriod: BlockNumber = 5 * DAYS;
+	// ~ 1000 samples per day -> ~ 20 blocks per sample -> 2 minute samples
+	pub const SampleLength: BlockNumber = 2 * MINUTES;
+}
+
+pub struct AuctionRandomness<T>(sp_std::marker::PhantomData<T>);
+impl<T: frame_system::Config> Randomness<Hash, BlockNumber> for AuctionRandomness<T> {
+	fn random(subject: &[u8]) -> (Hash, BlockNumber) {
+		// FIXME
+		(sp_core::hash::convert_hash(b"test"), 0)
+	}
+}
+impl auctions::Config for Runtime {
+	type Event = Event;
+	type Leaser = Slots;
+	type Registrar = Registrar;
+	type EndingPeriod = EndingPeriod;
+	type SampleLength = SampleLength;
+	// (ksm) type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
+	type Randomness = AuctionRandomness<Runtime>;
+	type InitiateOrigin = AuctionAdmin;
+	type WeightInfo = weights::runtime_common_auctions::WeightInfo<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -1008,6 +1056,7 @@ construct_runtime!(
 		Whitelist: pallet_whitelist,
 
 		// Governance
+		Origins: pallet_custom_origins::{Origin},
 		// Old:
 		Democracy: pallet_democracy,
 		Council: pallet_collective::<Instance1>,
@@ -1020,14 +1069,11 @@ construct_runtime!(
 		FellowshipCollective: pallet_ranked_collective::<Instance1>,
 		FellowshipReferenda: pallet_referenda::<Instance2>,
 
-		Origins: pallet_custom_origins::{Origin},
-
 		// Parachains pallets. Start indices at 50 to leave room.
 		ParachainsOrigin: parachains_origin::{Pallet, Origin} = 50,
 		Configuration: parachains_configuration::{Pallet, Call, Storage, Config<T>} = 51,
 		ParasShared: parachains_shared::{Pallet, Call, Storage} = 52,
 		ParaInclusion: parachains_inclusion::{Pallet, Call, Storage, Event<T>} = 53,
-		// ParaInherent: parachains_paras_inherent::{Pallet, Call, Storage, Inherent} = 54,
 		ParaScheduler: parachains_scheduler::{Pallet, Storage} = 55,
 		Paras: parachains_paras::{Pallet, Call, Storage, Event, Config} = 56,
 		Initializer: parachains_initializer::{Pallet, Call, Storage} = 57,
@@ -1040,12 +1086,10 @@ construct_runtime!(
 		// Parachain Onboarding Pallets. Start indices at 70 to leave room.
 		Registrar: paras_registrar::{Pallet, Call, Storage, Event<T>} = 70,
 		Slots: slots::{Pallet, Call, Storage, Event<T>} = 71,
-		// Auctions: auctions::{Pallet, Call, Storage, Event<T>} = 72,
+		Auctions: auctions::{Pallet, Call, Storage, Event<T>} = 72,
 		// Crowdloan: crowdloan::{Pallet, Call, Storage, Event<T>} = 73,
 
 		Sudo: pallet_sudo,
-		// Pallet for sending XCM,
-		// XcmPallet: pallet_xcm = 99,
 	}
 );
 

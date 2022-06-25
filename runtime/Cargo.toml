@@ -71,9 +71,6 @@ pallet-conviction-voting = { version = "4.0.0-dev", default-features = false, gi
 pallet-bags-list = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-ranked-collective = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-elections-phragmen  = { version = "5.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
-# babe-primitives = { package = "sp-consensus-babe", git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-# pallet-babe = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-
 runtime-common = { package = "polkadot-runtime-common", path = "./common", default-features = false }
 runtime-parachains = { package = "polkadot-runtime-parachains", path = "./parachains", default-features = false }
 primitives = { package = "polkadot-primitives", path = "../primitives", default-features = false }
@@ -81,7 +78,6 @@ primitives = { package = "polkadot-primitives", path = "../primitives", default-
 xcm = { package = "xcm", path = "../xcm", default-features = false }
 xcm-executor = { package = "xcm-executor", path = "../xcm/xcm-executor", default-features = false }
 xcm-builder = { package = "xcm-builder", path = "../xcm/xcm-builder", default-features = false }
-# pallet-xcm = { path = "../xcm/pallet-xcm", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
