@@ -385,9 +385,9 @@ impl pallet_tips::Config for Runtime {
 	type WeightInfo = weights::pallet_tips::WeightInfo<Runtime>;
 }
 // DONE
-impl pallet_authority_discovery::Config for Runtime {
-	type MaxAuthorities = MaxAuthorities;
-}
+// impl pallet_authority_discovery::Config for Runtime {
+// 	type MaxAuthorities = MaxAuthorities;
+// }
 
 // DONE
 impl pallet_grandpa::Config for Runtime {
@@ -478,15 +478,15 @@ parameter_types! {
 	pub const PreimageByteDeposit: Balance = deposit(0, 1);
 }
 
-impl pallet_preimage::Config for Runtime {
-	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
-	type Event = Event;
-	type Currency = Balances;
-	type ManagerOrigin = EnsureRoot<AccountId>;
-	type MaxSize = PreimageMaxSize;
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
-}
+// impl pallet_preimage::Config for Runtime {
+// 	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
+// 	type Event = Event;
+// 	type Currency = Balances;
+// 	type ManagerOrigin = EnsureRoot<AccountId>;
+// 	type MaxSize = PreimageMaxSize;
+// 	type BaseDeposit = PreimageBaseDeposit;
+// 	type ByteDeposit = PreimageByteDeposit;
+// }
 
 // DONE
 parameter_types! {
@@ -994,13 +994,13 @@ construct_runtime!(
 		Bounties: pallet_bounties,
 		Tips: pallet_tips,
 		Session: pallet_session,
-		Staking: pallet_staking,
 		Historical: pallet_session::historical,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 12,
+		Staking: pallet_staking,
+		// AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 12,
 
 		VoterList: pallet_bags_list::{Pallet, Call, Storage, Event<T>} = 39,
 
-		Preimage: pallet_preimage,
+		// Preimage: pallet_preimage,
 		Whitelist: pallet_whitelist,
 
 		// Governance

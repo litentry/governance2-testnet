@@ -177,7 +177,7 @@ fn testnet_genesis(
 		council: Default::default(),
 		technical_committee: Default::default(),
 		phragmen_election: Default::default(),
-		authority_discovery: Default::default(),
+		// authority_discovery: Default::default(),
 		configuration: Default::default(),
 		paras: Default::default(),
 	}
