@@ -785,16 +785,6 @@ impl parachains_configuration::Config for Runtime {
 
 impl parachains_shared::Config for Runtime {}
 
-impl parachains_session_info::Config for Runtime {
-	type ValidatorSet = Historical;
-}
-
-// impl parachains_inclusion::Config for Runtime {
-// 	type Event = Event;
-// 	type DisputesHandler = ParasDisputes;
-// 	type RewardValidators = parachains_reward_points::RewardValidatorsWithEraPoints<Runtime>;
-// }
-
 parameter_types! {
 	pub const ParasUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
 }
@@ -802,9 +792,8 @@ parameter_types! {
 impl parachains_paras::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = weights::runtime_parachains_paras::WeightInfo<Runtime>;
-	// type WeightInfo = ();
 	type UnsignedPriority = ParasUnsignedPriority;
-	// type NextSessionRotation = Babe;
+	// (ksm) type NextSessionRotation = Babe;
 	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
 }
 
@@ -812,47 +801,6 @@ parameter_types! {
 	pub const FirstMessageFactorPercent: u64 = 100;
 	pub const MaxAuthorities: u32 = 100_000;
 }
-
-impl parachains_ump::Config for Runtime {
-	type Event = Event;
-	// type UmpSink =
-	// 	crate::parachains_ump::XcmSink<xcm_executor::XcmExecutor<xcm_config::XcmConfig>, Runtime>;
-	type UmpSink = ();
-	type FirstMessageFactorPercent = FirstMessageFactorPercent;
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
-	type WeightInfo = weights::runtime_parachains_ump::WeightInfo<Runtime>;
-	// type WeightInfo = ();
-}
-
-impl parachains_dmp::Config for Runtime {}
-
-impl parachains_hrmp::Config for Runtime {
-	type Event = Event;
-	type Origin = Origin;
-	type Currency = Balances;
-	type WeightInfo = weights::runtime_parachains_hrmp::WeightInfo<Self>;
-	// type WeightInfo = ();
-}
-
-impl parachains_scheduler::Config for Runtime {}
-
-// impl parachains_initializer::Config for Runtime {
-// 	// type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
-// 	//type Randomness = ParachainInitializerRandomness;
-// 	type Randomness = RandomnessCollectiveFlip;
-// 	// type Randomness = ();
-// 	type ForceOrigin = EnsureRoot<AccountId>;
-// 	type WeightInfo = weights::runtime_parachains_initializer::WeightInfo<Runtime>;
-// 	// type WeightInfo = ();
-// }
-
-// impl parachains_disputes::Config for Runtime {
-// 	type Event = Event;
-// 	type RewardValidators = ();
-// 	type PunishValidators = ();
-// 	type WeightInfo = weights::runtime_parachains_disputes::WeightInfo<Runtime>;
-
-// }
 
 /// Weight functions for `runtime_common::paras_registrar`.
 pub struct ParasRegistrarWeightInfo<T>(PhantomData<T>);
@@ -1073,21 +1021,12 @@ construct_runtime!(
 		ParachainsOrigin: parachains_origin::{Pallet, Origin} = 50,
 		Configuration: parachains_configuration::{Pallet, Call, Storage, Config<T>} = 51,
 		ParasShared: parachains_shared::{Pallet, Call, Storage} = 52,
-		// ParaInclusion: parachains_inclusion::{Pallet, Call, Storage, Event<T>} = 53,
-		ParaScheduler: parachains_scheduler::{Pallet, Storage} = 55,
 		Paras: parachains_paras::{Pallet, Call, Storage, Event, Config} = 56,
-		// Initializer: parachains_initializer::{Pallet, Call, Storage} = 57,
-		Dmp: parachains_dmp::{Pallet, Call, Storage} = 58,
-		Ump: parachains_ump::{Pallet, Call, Storage, Event} = 59,
-		Hrmp: parachains_hrmp::{Pallet, Call, Storage, Event<T>, Config} = 60,
-		ParaSessionInfo: parachains_session_info::{Pallet, Storage} = 61,
-		// ParasDisputes: parachains_disputes::{Pallet, Call, Storage, Event<T>} = 62,
 
 		// Parachain Onboarding Pallets. Start indices at 70 to leave room.
 		Registrar: paras_registrar::{Pallet, Call, Storage, Event<T>} = 70,
 		Slots: slots::{Pallet, Call, Storage, Event<T>} = 71,
 		Auctions: auctions::{Pallet, Call, Storage, Event<T>} = 72,
-		// Crowdloan: crowdloan::{Pallet, Call, Storage, Event<T>} = 73,
 
 		Sudo: pallet_sudo,
 	}

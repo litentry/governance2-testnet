@@ -179,7 +179,6 @@ fn testnet_genesis(
 		phragmen_election: Default::default(),
 		authority_discovery: Default::default(),
 		configuration: Default::default(),
-		hrmp: Default::default(),
 		paras: Default::default(),
 	}
 }
