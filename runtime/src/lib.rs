@@ -995,22 +995,18 @@ construct_runtime!(
 		Tips: pallet_tips,
 		Session: pallet_session,
 		Historical: pallet_session::historical,
-		Staking: pallet_staking,
-		// AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 12,
-
 		VoterList: pallet_bags_list::{Pallet, Call, Storage, Event<T>} = 39,
-
-		// Preimage: pallet_preimage,
-		Whitelist: pallet_whitelist,
+		Staking: pallet_staking,
 
 		// Governance
 		Origins: pallet_custom_origins::{Origin},
-		// Old:
+		// Legacy:
 		Democracy: pallet_democracy,
 		Council: pallet_collective::<Instance1>,
 		TechnicalCommittee: pallet_collective::<Instance2>,
 		PhragmenElection: pallet_elections_phragmen,
 		// New:
+		Whitelist: pallet_whitelist,
 		Treasury: pallet_treasury,
 		ConvictionVoting: pallet_conviction_voting::{Pallet, Call, Storage, Event<T>} = 20,
 		Referenda: pallet_referenda,

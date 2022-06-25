@@ -33,7 +33,6 @@ mod tracks;
 pub use tracks::TracksInfo;
 mod fellowship;
 pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
-// pub use fellowship::{FellowshipCollectiveInstance,};
 
 parameter_types! {
 	pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
