@@ -17,13 +17,13 @@
 //!
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2022-05-25, STEPS: `50`, REPEAT: 20, LOW RANGE: `[]`, HIGH RANGE: `[]`
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("rococo-dev"), DB CACHE: 1024
+//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("kusama-dev"), DB CACHE: 1024
 
 // Executed Command:
 // ./target/production/polkadot
 // benchmark
 // pallet
-// --chain=rococo-dev
+// --chain=kusama-dev
 // --steps=50
 // --repeat=20
 // --pallet=runtime_parachains::paras
@@ -32,7 +32,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --header=./file_header.txt
-// --output=./runtime/rococo/src/weights/runtime_parachains_paras.rs
+// --output=./runtime/kusama/src/weights/runtime_parachains_paras.rs
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
@@ -59,12 +59,11 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 	}
 	// Storage: Paras Heads (r:0 w:1)
 	fn force_set_current_head(s: u32, ) -> Weight {
-		(9_771_000 as Weight)
+		(12_487_000 as Weight)
 			// Standard Error: 0
 			.saturating_add((1_000 as Weight).saturating_mul(s as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: Paras FutureCodeHash (r:1 w:1)
 	// Storage: Paras CurrentCodeHash (r:1 w:0)
 	// Storage: Paras UpgradeCooldowns (r:1 w:1)
@@ -79,14 +78,14 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 		(0 as Weight)
 			// Standard Error: 0
 			.saturating_add((3_000 as Weight).saturating_mul(c as Weight))
-			.saturating_add(T::DbWeight::get().reads(9 as Weight))
+			.saturating_add(T::DbWeight::get().reads(8 as Weight))
 			.saturating_add(T::DbWeight::get().writes(8 as Weight))
 	}
 	// Storage: Paras FutureCodeUpgrades (r:1 w:0)
 	// Storage: Paras Heads (r:0 w:1)
 	// Storage: Paras UpgradeGoAheadSignal (r:0 w:1)
 	fn force_note_new_head(s: u32, ) -> Weight {
-		(12_928_000 as Weight)
+		(11_111_000 as Weight)
 			// Standard Error: 0
 			.saturating_add((1_000 as Weight).saturating_mul(s as Weight))
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
@@ -95,7 +94,7 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
 	// Storage: Paras ActionsQueue (r:1 w:1)
 	fn force_queue_action() -> Weight {
-		(17_913_000 as Weight)
+		(18_669_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
@@ -111,20 +110,18 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 	// Storage: Paras CodeByHashRefs (r:1 w:0)
 	// Storage: Paras CodeByHash (r:0 w:1)
 	fn poke_unused_validation_code() -> Weight {
-		(2_562_000 as Weight)
+		(2_593_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: ParasShared ActiveValidatorKeys (r:1 w:0)
 	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
 	// Storage: Paras PvfActiveVoteMap (r:1 w:1)
 	fn include_pvf_check_statement() -> Weight {
-		(102_460_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+		(102_710_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: ParasShared ActiveValidatorKeys (r:1 w:0)
 	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
 	// Storage: Paras PvfActiveVoteMap (r:1 w:1)
@@ -133,11 +130,10 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 	// Storage: System Digest (r:1 w:1)
 	// Storage: Paras FutureCodeUpgrades (r:0 w:100)
 	fn include_pvf_check_statement_finalize_upgrade_accept() -> Weight {
-		(690_234_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(7 as Weight))
+		(686_448_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(104 as Weight))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: ParasShared ActiveValidatorKeys (r:1 w:0)
 	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
 	// Storage: Paras PvfActiveVoteMap (r:1 w:1)
@@ -147,22 +143,20 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 	// Storage: Paras UpgradeGoAheadSignal (r:0 w:100)
 	// Storage: Paras FutureCodeHash (r:0 w:100)
 	fn include_pvf_check_statement_finalize_upgrade_reject() -> Weight {
-		(591_569_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+		(590_115_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(204 as Weight))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: ParasShared ActiveValidatorKeys (r:1 w:0)
 	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
 	// Storage: Paras PvfActiveVoteMap (r:1 w:1)
 	// Storage: Paras PvfActiveVoteList (r:1 w:1)
 	// Storage: Paras ActionsQueue (r:1 w:1)
 	fn include_pvf_check_statement_finalize_onboarding_accept() -> Weight {
-		(549_055_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+		(543_682_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
-	// Storage: Configuration ActiveConfig (r:1 w:0)
 	// Storage: ParasShared ActiveValidatorKeys (r:1 w:0)
 	// Storage: ParasShared CurrentSessionIndex (r:1 w:0)
 	// Storage: Paras PvfActiveVoteMap (r:1 w:1)
@@ -173,8 +167,8 @@ impl<T: frame_system::Config> runtime_parachains::paras::WeightInfo for WeightIn
 	// Storage: Paras CurrentCodeHash (r:0 w:100)
 	// Storage: Paras UpcomingParasGenesis (r:0 w:100)
 	fn include_pvf_check_statement_finalize_onboarding_reject() -> Weight {
-		(650_931_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+		(646_030_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(304 as Weight))
 	}
 }

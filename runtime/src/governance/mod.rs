@@ -29,63 +29,63 @@ pub use origins::{
 	FellowshipInitiates, FellowshipMasters, GeneralAdmin, LeaseAdmin, ReferendumCanceller,
 	ReferendumKiller, Spender, StakingAdmin, WhitelistedCaller,
 };
-// mod tracks;
-// pub use tracks::TracksInfo;
+mod tracks;
+pub use tracks::TracksInfo;
 mod fellowship;
-// pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
-pub use fellowship::{FellowshipCollectiveInstance,};
+pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
 
-// parameter_types! {
-// 	pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
-// }
+parameter_types! {
+	pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
+}
 
-// impl pallet_conviction_voting::Config for Runtime {
-// 	type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Self>; //TODO
-// 	type Event = Event;
-// 	type Currency = Balances;
-// 	type VoteLockingPeriod = VoteLockingPeriod;
-// 	type MaxVotes = ConstU32<512>;
-// 	type MaxTurnout = frame_support::traits::TotalIssuanceOf<Balances, Self::AccountId>;
-// 	type Polls = Referenda;
-// }
+impl pallet_conviction_voting::Config for Runtime {
+	type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Self>; //TODO
+	type Event = Event;
+	type Currency = Balances;
+	type VoteLockingPeriod = VoteLockingPeriod;
+	type MaxVotes = ConstU32<512>;
+	type MaxTurnout = frame_support::traits::TotalIssuanceOf<Balances, Self::AccountId>;
+	type Polls = Referenda;
+}
 
-// parameter_types! {
-// 	pub const AlarmInterval: BlockNumber = 1;
-// 	pub const SubmissionDeposit: Balance = 100 * UNITS;
-// 	pub const UndecidingTimeout: BlockNumber = 28 * DAYS;
-// }
+parameter_types! {
+	pub const AlarmInterval: BlockNumber = 1;
+	pub const SubmissionDeposit: Balance = 100 * UNITS;
+	pub const UndecidingTimeout: BlockNumber = 28 * DAYS;
+}
 
-// parameter_types! {
-// 	pub const MaxBalance: Balance = Balance::max_value();
-// }
-// pub type TreasurySpender = EitherOf<EnsureRootWithSuccess<AccountId, MaxBalance>, Spender>;
+parameter_types! {
+	pub const MaxBalance: Balance = Balance::max_value();
+}
+pub type TreasurySpender = EitherOf<EnsureRootWithSuccess<AccountId, MaxBalance>, Spender>;
 
-// impl origins::pallet_custom_origins::Config for Runtime {}
+impl origins::pallet_custom_origins::Config for Runtime {}
 
-// impl pallet_whitelist::Config for Runtime {
-// 	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Self>; //TODO
-// 	type Event = Event;
-// 	type Call = Call;
-// 	type WhitelistOrigin = Fellows;
-// 	type DispatchWhitelistedOrigin = WhitelistedCaller;
-// 	type PreimageProvider = Preimage;
-// }
+impl pallet_whitelist::Config for Runtime {
+	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Self>; //TODO
+	type Event = Event;
+	type Call = Call;
+	type WhitelistOrigin = Fellows;
+	type DispatchWhitelistedOrigin = WhitelistedCaller;
+	// type PreimageProvider = Preimage;
+	type PreimageProvider = ();
+}
 
-// impl pallet_referenda::Config for Runtime {
-// 	type WeightInfo = pallet_referenda::weights::SubstrateWeight<Self>; //TODO
-// 	type Call = Call;
-// 	type Event = Event;
-// 	type Scheduler = Scheduler;
-// 	type Currency = Balances;
-// 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
-// 	type CancelOrigin = ReferendumCanceller;
-// 	type KillOrigin = ReferendumKiller;
-// 	type Slash = ();
-// 	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
-// 	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
-// 	type SubmissionDeposit = SubmissionDeposit;
-// 	type MaxQueued = ConstU32<100>;
-// 	type UndecidingTimeout = UndecidingTimeout;
-// 	type AlarmInterval = AlarmInterval;
-// 	type Tracks = TracksInfo;
-// }
+impl pallet_referenda::Config for Runtime {
+	type WeightInfo = pallet_referenda::weights::SubstrateWeight<Self>; //TODO
+	type Call = Call;
+	type Event = Event;
+	type Scheduler = Scheduler;
+	type Currency = Balances;
+	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+	type CancelOrigin = ReferendumCanceller;
+	type KillOrigin = ReferendumKiller;
+	type Slash = ();
+	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
+	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
+	type SubmissionDeposit = SubmissionDeposit;
+	type MaxQueued = ConstU32<100>;
+	type UndecidingTimeout = UndecidingTimeout;
+	type AlarmInterval = AlarmInterval;
+	type Tracks = TracksInfo;
+}

@@ -2217,12 +2217,9 @@ dependencies = [
  "pallet-bags-list",
  "pallet-balances",
  "pallet-bounties",
- "pallet-collective",
  "pallet-conviction-voting",
  "pallet-democracy",
- "pallet-elections-phragmen",
  "pallet-grandpa",
- "pallet-preimage",
  "pallet-randomness-collective-flip",
  "pallet-ranked-collective",
  "pallet-referenda",
@@ -2237,7 +2234,6 @@ dependencies = [
  "pallet-treasury",
  "pallet-whitelist",
  "parity-scale-codec",
- "polkadot-primitives",
  "polkadot-runtime-common",
  "polkadot-runtime-parachains",
  "scale-info",
@@ -2256,9 +2252,6 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder",
- "xcm",
- "xcm-builder",
- "xcm-executor",
 ]
 
 [[package]]
@@ -4304,23 +4297,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#90d08f77aaaebe8f7012216948e54b6684a175b3"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-conviction-voting"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=master#90d08f77aaaebe8f7012216948e54b6684a175b3"
@@ -4377,24 +4353,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#90d08f77aaaebe8f7012216948e54b6684a175b3"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-npos-elections",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=master#90d08f77aaaebe8f7012216948e54b6684a175b3"
@@ -4431,22 +4389,6 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-mmr-primitives",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-preimage"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#90d08f77aaaebe8f7012216948e54b6684a175b3"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -4698,28 +4640,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-xcm"
-version = "0.9.23"
-dependencies = [
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "parity-scale-codec",
- "polkadot-parachain",
- "polkadot-runtime-parachains",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "xcm",
- "xcm-builder",
- "xcm-executor",
 ]
 
 [[package]]
@@ -9311,29 +9231,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "xcm-procedural",
-]
-
-[[package]]
-name = "xcm-builder"
-version = "0.9.23"
-dependencies = [
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "pallet-transaction-payment",
- "pallet-xcm",
- "parity-scale-codec",
- "polkadot-parachain",
- "polkadot-runtime-parachains",
- "scale-info",
- "sp-arithmetic",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "xcm",
- "xcm-executor",
 ]
 
 [[package]]

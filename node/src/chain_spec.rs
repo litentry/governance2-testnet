@@ -2,7 +2,7 @@ use governance2_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY, SessionConfig,
 };
- use governance2_runtime::opaque::SessionKeys;
+use governance2_runtime::opaque::SessionKeys;
 
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -170,16 +170,14 @@ fn testnet_genesis(
 			// Assign network admin rights.
 			key: Some(root_key),
 		},
-		// transaction_payment: Default::default(),
 		staking: Default::default(),
 		treasury: Default::default(),
 		democracy: Default::default(),
-		council: Default::default(),
-		technical_committee: Default::default(),
-		phragmen_election: Default::default(),
-		authority_discovery: Default::default(),
 		configuration: Default::default(),
-		hrmp: Default::default(),
 		paras: Default::default(),
+		// Legacy governance pallets
+		// council: Default::default(),
+		// technical_committee: Default::default(),
+		// phragmen_election: Default::default(),
 	}
 }
