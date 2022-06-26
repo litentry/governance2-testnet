@@ -19,7 +19,7 @@
 //! place, so until then it will need to live here. Once it is in place and there exists a bridge
 //! between Polkadot/Kusama then this code can be removed.
 
-use frame_support::traits::{MapSuccess, TryMapSuccess};
+use frame_support::traits::{MapSuccess, TryMapSuccess, EnsureOrigin};
 use sp_arithmetic::traits::CheckedSub;
 use sp_runtime::{
 	morph_types,
@@ -314,16 +314,23 @@ morph_types! {
 	} where N::Type: CheckedSub;
 }
 
+// pub struct TestPromoteOrigin<T, I>(PhantomData<(T, I)>);
+// impl<T, I> EnsureOrigin<T::Origin, I: Rank> for TestPromoteOrigin<T,I> {
+// }
+
 impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime {
 	type WeightInfo = ();
 	type Event = Event;
 	// Promotion is by either:
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
 	// - a vote by the rank *above* the new rank.
-	type PromoteOrigin = EitherOf<
-		MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
-		TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<1>>>,
-	>;
+	// type PromoteOrigin = EitherOf<
+	// 	MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
+	// 	TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<1>>>,
+	// >;
+	// type PromoteOrigin = MapSuccess<WhitelistedCaller, Replace<ConstU16<9>>>;
+	// FIXME:
+
 	// Demotion is by either:
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
 	// - a vote by the rank two above the current rank.

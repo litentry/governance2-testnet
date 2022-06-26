@@ -493,17 +493,6 @@ parameter_types! {
 	pub const PreimageByteDeposit: Balance = deposit(0, 1);
 }
 
-// impl pallet_preimage::Config for Runtime {
-// 	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
-// 	type Event = Event;
-// 	type Currency = Balances;
-// 	type ManagerOrigin = EnsureRoot<AccountId>;
-// 	type MaxSize = PreimageMaxSize;
-// 	type BaseDeposit = PreimageBaseDeposit;
-// 	type ByteDeposit = PreimageByteDeposit;
-// }
-
-// DONE
 parameter_types! {
 	pub const Period: u32 = 6 * HOURS;
 	pub const Offset: u32 = 0;
@@ -640,40 +629,10 @@ impl pallet_staking::Config for Runtime {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// pub type CouncilCollective = pallet_collective::Instance1;
-// pub type TechnicalCollective = pallet_collective::Instance2;
-parameter_types! {
-	pub CouncilMotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 2 * MINUTES, "DOT_MOTION_DURATION");
-	pub const CouncilMaxProposals: u32 = 100;
-	pub const CouncilMaxMembers: u32 = 100;
-}
-
-// impl pallet_collective::Config<CouncilCollective> for Runtime {
-// 	type Origin = Origin;
-// 	type Proposal = Call;
-// 	type Event = Event;
-// 	type MotionDuration = CouncilMotionDuration;
-// 	type MaxProposals = CouncilMaxProposals;
-// 	type MaxMembers = CouncilMaxMembers;
-// 	type DefaultVote = pallet_collective::PrimeDefaultVote;
-// 	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
-// 	type WeightInfo = ();
-// }
-parameter_types! {
-	pub const TechnicalMotionDuration: BlockNumber = 7 * DAYS;
-	pub const TechnicalMaxProposals: u32 = 100;
-	pub const TechnicalMaxMembers: u32 = 100;
-}
-// impl pallet_collective::Config<TechnicalCollective> for Runtime {
-// 	type Origin = Origin;
-// 	type Proposal = Call;
-// 	type Event = Event;
-// 	type MotionDuration = TechnicalMotionDuration;
-// 	type MaxProposals = TechnicalMaxProposals;
-// 	type MaxMembers = TechnicalMaxMembers;
-// 	type DefaultVote = pallet_collective::PrimeDefaultVote;
-// 	// type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
-// 	type WeightInfo = ();
+// parameter_types! {
+// 	pub CouncilMotionDuration: BlockNumber = prod_or_fast!(7 * DAYS, 2 * MINUTES, "DOT_MOTION_DURATION");
+// 	pub const CouncilMaxProposals: u32 = 100;
+// 	pub const CouncilMaxMembers: u32 = 100;
 // }
 
 parameter_types! {
@@ -751,24 +710,6 @@ parameter_types! {
 	pub const DesiredRunnersUp: u32 = 20;
 	pub const PhragmenElectionPalletId: LockIdentifier = *b"phrelect";
 }
-
-// impl pallet_elections_phragmen::Config for Runtime {
-// 	type Event = Event;
-// 	type PalletId = PhragmenElectionPalletId;
-// 	type Currency = Balances;
-// 	// type ChangeMembers = Council;
-// 	// type InitializeMembers = Council;
-// 	type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
-// 	type CandidacyBond = CandidacyBond;
-// 	type VotingBondBase = VotingBondBase;
-// 	type VotingBondFactor = VotingBondFactor;
-// 	type LoserCandidate = Treasury;
-// 	type KickedMember = Treasury;
-// 	type DesiredMembers = DesiredMembers;
-// 	type DesiredRunnersUp = DesiredRunnersUp;
-// 	type TermDuration = TermDuration;
-// 	type WeightInfo = weights::pallet_elections_phragmen::WeightInfo<Runtime>;
-// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Parachain Stuff
