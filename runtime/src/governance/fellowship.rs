@@ -314,9 +314,16 @@ morph_types! {
 	} where N::Type: CheckedSub;
 }
 
-// pub struct TestPromoteOrigin<T, I>(PhantomData<(T, I)>);
-// impl<T, I> EnsureOrigin<T::Origin, I: Rank> for TestPromoteOrigin<T,I> {
-// }
+pub struct TestPromoteOrigin<AccountId>(PhantomData<AccountId>);
+impl<O: Into<Result<frame_system::RawOrigin<AccountId>, O>> + From<frame_system::RawOrigin<AccountId>>, AccountId> EnsureOrigin<O> for TestPromoteOrigin<AccountId> {
+	type Success = u16;
+	fn try_origin(o: O) -> Result<Self::Success, O> {
+		o.into().and_then(|o| match o {
+			frame_system::RawOrigin::None => Ok(1),
+			r => Ok(1),
+		})
+	}
+}
 
 impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime {
 	type WeightInfo = ();
@@ -328,16 +335,18 @@ impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime 
 	// 	MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
 	// 	TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<1>>>,
 	// >;
-	// type PromoteOrigin = MapSuccess<WhitelistedCaller, Replace<ConstU16<9>>>;
 	// FIXME:
-
+	type PromoteOrigin = TestPromoteOrigin<AccountId>;
+	// type PromoteOrigin = TestPromoteOrigin<AccountId>;
 	// Demotion is by either:
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
 	// - a vote by the rank two above the current rank.
-	type DemoteOrigin = EitherOf<
-		MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
-		TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<2>>>,
-	>;
+	// type DemoteOrigin = EitherOf<
+	// 	MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
+	// 	TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<2>>>,
+	// >;
+	// FIXME:
+	type DemoteOrigin = TestPromoteOrigin<AccountId>;
 	type Polls = FellowshipReferenda;
 	// type MinRankOfClass = sp_runtime::traits::Identity;
 	type MinRankOfClass = ();
