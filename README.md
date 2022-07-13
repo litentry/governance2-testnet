@@ -3,8 +3,8 @@
 
 Set up a testnet for new substrate governance model
 
-[Endpoint](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fgovernance2-testnet.litentry.io#/explorer)
-[Explorer](https://gov2.statescan.io/)
+* [Endpoint](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fgovernance2-testnet.litentry.io#/explorer)
+* [Explorer](https://gov2.statescan.io/)
 
 ## Communication
 
