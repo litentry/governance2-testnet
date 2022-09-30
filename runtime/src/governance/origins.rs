@@ -29,8 +29,7 @@ pub mod pallet_custom_origins {
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
-	#[derive(PartialEq, Eq, Clone, Encode, Decode, TypeInfo, MaxEncodedLen)]
-	#[cfg_attr(feature = "std", derive(Debug))]
+	#[derive(PartialEq, Eq, Clone, MaxEncodedLen, Encode, Decode, TypeInfo, RuntimeDebug)]
 	#[pallet::origin]
 	pub enum Origin {
 		/// Origin for cancelling slashes.

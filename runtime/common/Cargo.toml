@@ -1,13 +1,13 @@
 [package]
 name = "polkadot-runtime-common"
-version = "0.9.23"
+version = "0.9.29"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2021"
 
 [dependencies]
 impl-trait-for-tuples = "0.2.2"
 bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
-parity-scale-codec = { version = "3.1.2", default-features = false, features = ["derive"] }
+parity-scale-codec = { version = "3.1.5", default-features = false, features = ["derive"] }
 log = { version = "0.4.17", default-features = false }
 rustc-hex = { version = "2.1.0", default-features = false }
 scale-info = { version = "2.1.2", default-features = false, features = ["derive"] }
@@ -57,10 +57,9 @@ frame-support-test = { git = "https://github.com/paritytech/substrate", branch =
 pallet-babe = { git = "https://github.com/paritytech/substrate", branch = "master" }
 pallet-treasury = { git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-keystore = { git = "https://github.com/paritytech/substrate", branch = "master" }
-trie-db = "0.23.1"
 serde_json = "1.0.81"
 libsecp256k1 = "0.7.0"
-# test-helpers = { package = "polkadot-primitives-test-helpers", path = "../../primitives/test-helpers" }
+test-helpers = { package = "polkadot-primitives-test-helpers", path = "../../primitives/test-helpers" }
 
 [features]
 default = ["std"]
@@ -73,7 +72,7 @@ std = [
 	"rustc-hex/std",
 	"serde_derive",
 	"serde/std",
-	# "primitives/std",
+	"primitives/std",
 	"inherents/std",
 	"sp-core/std",
 	"sp-api/std",
@@ -96,8 +95,8 @@ std = [
 	"sp-staking/std",
 	"frame-system/std",
 	"libsecp256k1/std",
-	# "runtime-parachains/std",
-	# "xcm/std",
+	"runtime-parachains/std",
+	"xcm/std",
 	"sp-npos-elections/std",
 	"pallet-bags-list/std"
 ]
@@ -107,11 +106,12 @@ runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
-	# "runtime-parachains/runtime-benchmarks",
+	"runtime-parachains/runtime-benchmarks",
 	"pallet-babe/runtime-benchmarks",
+	"pallet-bags-list/runtime-benchmarks",
 ]
 try-runtime = [
-	# "runtime-parachains/try-runtime",
+	"runtime-parachains/try-runtime",
 	"pallet-authorship/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-session/try-runtime",

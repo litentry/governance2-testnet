@@ -48,5 +48,6 @@ pub enum Subcommand {
 	#[cfg(not(feature = "try-runtime"))]
 	TryRuntime,
 
+	/// Db meta columns information.
 	ChainInfo(sc_cli::ChainInfoCmd),
 }

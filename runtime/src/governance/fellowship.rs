@@ -38,7 +38,7 @@ parameter_types! {
 pub struct TracksInfo;
 impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 	type Id = u16;
-	type Origin = <Origin as frame_support::traits::OriginTrait>::PalletsOrigin;
+	type RuntimeOrigin = <RuntimeOrigin as frame_support::traits::OriginTrait>::PalletsOrigin;
 	fn tracks() -> &'static [(Self::Id, pallet_referenda::TrackInfo<Balance, BlockNumber>)] {
 		static DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 10] = [
 			(
@@ -264,8 +264,19 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 		];
 		&DATA[..]
 	}
-	fn track_for(id: &Self::Origin) -> Result<Self::Id, ()> {
+	fn track_for(id: &Self::RuntimeOrigin) -> Result<Self::Id, ()> {
 		use super::origins::Origin;
+
+		#[cfg(feature = "runtime-benchmarks")]
+		{
+			// For benchmarks, we enable a root origin.
+			// It is important that this is not available in production!
+			let root: Self::RuntimeOrigin = frame_system::RawOrigin::Root.into();
+			if &root == id {
+				return Ok(9)
+			}
+		}
+
 		match Origin::try_from(id.clone()) {
 			Ok(Origin::FellowshipInitiates) => Ok(0),
 			Ok(Origin::Fellowship1Dan) => Ok(1),
@@ -281,20 +292,22 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 		}
 	}
 }
+pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
 
 pub type FellowshipReferendaInstance = pallet_referenda::Instance2;
 
 impl pallet_referenda::Config<FellowshipReferendaInstance> for Runtime {
+	/// type WeightInfo = weights::pallet_referenda_fellowship_referenda::WeightInfo<Self>;
 	type WeightInfo = ();
-	type Call = Call;
-	type Event = Event;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
 	type Scheduler = Scheduler;
 	type Currency = Balances;
 	type SubmitOrigin =
 		pallet_ranked_collective::EnsureMember<Runtime, FellowshipCollectiveInstance, 1>;
 	type CancelOrigin = FellowshipExperts;
 	type KillOrigin = FellowshipMasters;
-	type Slash = ();
+	type Slash = Treasury;
 	type Votes = pallet_ranked_collective::Votes;
 	type Tally = pallet_ranked_collective::TallyOf<Runtime, FellowshipCollectiveInstance>;
 	type SubmissionDeposit = SubmissionDeposit;
@@ -326,24 +339,43 @@ impl<O: Into<Result<frame_system::RawOrigin<AccountId>, O>> + From<frame_system:
 }
 
 impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime {
+	// type WeightInfo = weights::pallet_ranked_collective::WeightInfo<Self>;
 	type WeightInfo = ();
-	type Event = Event;
-	// Promotion is by either:
+	type RuntimeEvent = RuntimeEvent;
+	// Promotion is by any of:
+	// - Root can demote arbitrarily.
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
 	// - a vote by the rank *above* the new rank.
 	// type PromoteOrigin = EitherOf<
-	// 	MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
-	// 	TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<1>>>,
+	// 	EitherOf<
+	// 		MapSuccess<
+	// 			pallet_collective::EnsureProportionAtLeast<
+	// 				Self::AccountId,
+	// 				super::old::TechnicalCollective,
+	// 				2,
+	// 				3,
+	// 			>,
+	// 			Replace<ConstU16<6>>,
+	// 		>,
+	// 		frame_system::EnsureRootWithSuccess<Self::AccountId, ConstU16<65535>>,
+	// 	>,
+	// 	EitherOf<
+	// 		MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
+	// 		TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<1>>>,
+	// 	>,
 	// >;
 	// FIXME:
 	type PromoteOrigin = TestPromoteOrigin<AccountId>;
-	// type PromoteOrigin = TestPromoteOrigin<AccountId>;
-	// Demotion is by either:
+	// Demotion is by any of:
+	// - Root can demote arbitrarily.
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
 	// - a vote by the rank two above the current rank.
 	// type DemoteOrigin = EitherOf<
-	// 	MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
-	// 	TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<2>>>,
+	// 	frame_system::EnsureRootWithSuccess<Self::AccountId, ConstU16<65535>>,
+	// 	EitherOf<
+	// 		MapSuccess<FellowshipAdmin, Replace<ConstU16<9>>>,
+	// 		TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<2>>>,
+	// 	>,
 	// >;
 	// FIXME:
 	type DemoteOrigin = TestPromoteOrigin<AccountId>;
