@@ -316,9 +316,7 @@ impl pallet_scheduler::Config for Runtime {
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
 	// FIXME: type OriginPrivilegeCmp = OriginPrivilegeCmp;
 	type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
-	// FIXME: type PreimageProvider = Preimage;
-	// type PreimageProvider = Preimage;
-	type PreimageProvider = ();
+	type PreimageProvider = Preimage;
 	type NoPreimagePostponement = NoPreimagePostponement;
 }
 
@@ -526,16 +524,15 @@ parameter_types! {
 	pub const PreimageByteDeposit: Balance = deposit(0, 1);
 }
 
-// impl pallet_preimage::Config for Runtime {
-// 	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type Currency = Balances;
-// 	type ManagerOrigin = EnsureRoot<AccountId>; // This might be too strong a requirenent?
-// 	type MaxSize = PreimageMaxSize;
-// 	type BaseDeposit = PreimageBaseDeposit;
-// 	type ByteDeposit = PreimageByteDeposit;
-// }
-
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = weights::pallet_preimage::WeightInfo<Runtime>;
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type ManagerOrigin = EnsureRoot<AccountId>; // This might be too strong a requirenent?
+	type MaxSize = PreimageMaxSize;
+	type BaseDeposit = PreimageBaseDeposit;
+	type ByteDeposit = PreimageByteDeposit;
+}
 
 parameter_types! {
 	pub const Period: u32 = 6 * HOURS;
@@ -976,6 +973,7 @@ construct_runtime!(
 		Grandpa: pallet_grandpa,
 
 		// Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 32,
+		Preimage: pallet_preimage,
 
 		// Token related
 		Balances: pallet_balances,

@@ -67,8 +67,7 @@ impl pallet_whitelist::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type WhitelistOrigin = Fellows;
 	type DispatchWhitelistedOrigin = WhitelistedCaller;
-	// type PreimageProvider = Preimage;
-	type PreimageProvider = ();
+	type PreimageProvider = Preimage;
 }
 
 impl pallet_referenda::Config for Runtime {
