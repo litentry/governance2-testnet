@@ -317,8 +317,9 @@ impl pallet_scheduler::Config for Runtime {
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
 	// FIXME: type OriginPrivilegeCmp = OriginPrivilegeCmp;
 	type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
-	type PreimageProvider = Preimage;
-	type NoPreimagePostponement = NoPreimagePostponement;
+	// type PreimageProvider = Preimage;
+	// type NoPreimagePostponement = NoPreimagePostponement;
+	type Preimages = Preimage;
 }
 
 // DONE
@@ -530,7 +531,7 @@ impl pallet_preimage::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>; // This might be too strong a requirenent?
-	type MaxSize = PreimageMaxSize;
+	// type MaxSize = PreimageMaxSize;
 	type BaseDeposit = PreimageBaseDeposit;
 	type ByteDeposit = PreimageByteDeposit;
 }
@@ -689,10 +690,12 @@ parameter_types! {
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
+	pub const MaxDeposits: u32 = 100;
+	pub const MaxBlacklisted: u32 = 10;
 }
 
 impl pallet_democracy::Config for Runtime {
-	type Proposal = RuntimeCall;
+	// type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type EnactmentPeriod = EnactmentPeriod;
@@ -729,15 +732,19 @@ impl pallet_democracy::Config for Runtime {
 	// FIXME: Need check upstream settings
 	type VetoOrigin = pallet_ranked_collective::EnsureMember<Runtime, FellowshipCollectiveInstance, 1>;
 	type CooloffPeriod = CooloffPeriod;
-	type PreimageByteDeposit = PreimageByteDeposit;
+	// type PreimageByteDeposit = PreimageByteDeposit;
 	// FIXME: Need check upstream settings
-	type OperationalPreimageOrigin = pallet_ranked_collective::EnsureMember<Runtime, FellowshipCollectiveInstance, 1>;
+	// type OperationalPreimageOrigin = pallet_ranked_collective::EnsureMember<Runtime, FellowshipCollectiveInstance, 1>;
 	type Slash = Treasury;
 	type Scheduler = Scheduler;
 	type PalletsOrigin = OriginCaller;
 	type MaxVotes = MaxVotes;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Runtime>;
 	type MaxProposals = MaxProposals;
+
+	type Preimages = Preimage;
+	type MaxDeposits = ();
+	type MaxBlacklisted = ();
 }
 
 parameter_types! {
