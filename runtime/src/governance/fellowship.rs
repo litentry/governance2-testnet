@@ -23,6 +23,7 @@ use frame_support::traits::{MapSuccess, TryMapSuccess, EnsureOrigin};
 use sp_arithmetic::traits::CheckedSub;
 use sp_runtime::{
 	morph_types,
+	FixedI64,
 	traits::{ConstU16, Replace, TypedGet},
 };
 
@@ -56,11 +57,18 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 						floor: Perbill::from_percent(50),
 						ceil: Perbill::from_percent(100),
 					},
-					min_support: pallet_referenda::Curve::LinearDecreasing {
-						length: Perbill::from_percent(100),
-						floor: Perbill::from_percent(0),
-						ceil: Perbill::from_percent(50),
+					// min_support: pallet_referenda::Curve::LinearDecreasing {
+					// 	length: Perbill::from_percent(100),
+					// 	floor: Perbill::from_percent(0),
+					// 	ceil: Perbill::from_percent(50),
+					// },
+					min_support: pallet_referenda::Curve::SteppedDecreasing {
+						begin: Perbill::from_percent(100),
+						end: Perbill::from_percent(10),
+						step: Perbill::from_percent(20),
+						period: Perbill::from_percent(50),
 					},
+
 				},
 			),
 			(
@@ -78,10 +86,15 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 						floor: Perbill::from_percent(50),
 						ceil: Perbill::from_percent(100),
 					},
-					min_support: pallet_referenda::Curve::LinearDecreasing {
-						length: Perbill::from_percent(100),
-						floor: Perbill::from_percent(0),
-						ceil: Perbill::from_percent(50),
+					// min_support: pallet_referenda::Curve::LinearDecreasing {
+					// 	length: Perbill::from_percent(100),
+					// 	floor: Perbill::from_percent(0),
+					// 	ceil: Perbill::from_percent(50),
+					// },
+					min_support: pallet_referenda::Curve::Reciprocal {
+						factor: FixedI64::from_u32(10),
+						x_offset: FixedI64::from_u32(5),
+						y_offset: FixedI64::from_u32(1),
 					},
 				},
 			),
