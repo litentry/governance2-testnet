@@ -51,7 +51,7 @@ impl pallet_conviction_voting::Config for Runtime {
 parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;
 	pub const SubmissionDeposit: Balance = 100 * UNITS;
-	pub const UndecidingTimeout: BlockNumber = 28 * DAYS;
+	pub const UndecidingTimeout: BlockNumber = 1 * HOURS;
 }
 
 parameter_types! {
