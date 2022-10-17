@@ -76,7 +76,7 @@ use pallet_transaction_payment::CurrencyAdapter;
 
 pub mod governance;
 use governance::{
-	pallet_custom_origins, AuctionAdmin,
+	pallet_custom_origins, AuctionAdmin, GeneralAdmin,
 	FellowshipCollectiveInstance, FellowshipReferendaInstance,
 	FellowshipAdmin, LeaseAdmin, StakingAdmin, TreasurySpender};
 
@@ -562,6 +562,29 @@ impl pallet_session::historical::Config for Runtime {
 	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
 }
 
+parameter_types! {
+	// Minimum 100 bytes/KSM deposited (1 CENT/byte)
+	pub const BasicDeposit: Balance = 1000 * CENTS;       // 258 bytes on-chain
+	pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
+	pub const SubAccountDeposit: Balance = 200 * CENTS;   // 53 bytes on-chain
+	pub const MaxSubAccounts: u32 = 100;
+	pub const MaxAdditionalFields: u32 = 100;
+	pub const MaxRegistrars: u32 = 20;
+}
+impl pallet_identity::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type BasicDeposit = BasicDeposit;
+	type FieldDeposit = FieldDeposit;
+	type SubAccountDeposit = SubAccountDeposit;
+	type MaxSubAccounts = MaxSubAccounts;
+	type MaxAdditionalFields = MaxAdditionalFields;
+	type MaxRegistrars = MaxRegistrars;
+	type Slashed = Treasury;
+	type ForceOrigin = GeneralAdmin;
+	type RegistrarOrigin = GeneralAdmin;
+	type WeightInfo = weights::pallet_identity::WeightInfo<Runtime>;
+}
 
 // DOING
 // fn era_payout(
@@ -1007,6 +1030,8 @@ construct_runtime!(
 		Referenda: pallet_referenda,
 		FellowshipCollective: pallet_ranked_collective::<Instance1>,
 		FellowshipReferenda: pallet_referenda::<Instance2>,
+
+		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 25,
 
 		// Parachains pallets. Start indices at 50 to leave room.
 		ParachainsOrigin: parachains_origin::{Pallet, Origin} = 50,

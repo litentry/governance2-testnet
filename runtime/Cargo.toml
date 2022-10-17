@@ -27,6 +27,7 @@ frame-try-runtime = { version = "0.10.0-dev", default-features = false, git = "h
 pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 pallet-authority-discovery = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+pallet-identity = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 frame-executive = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-arithmetic = { package = "sp-arithmetic", default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -107,6 +108,7 @@ std = [
 	"pallet-ranked-collective/std",
 	"pallet-conviction-voting/std",
 	"pallet-bags-list/std",
+	"pallet-identity/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -136,6 +138,7 @@ runtime-benchmarks = [
 	"pallet-referenda/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-staking/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-bounties/runtime-benchmarks",
 	"pallet-whitelist/runtime-benchmarks",
