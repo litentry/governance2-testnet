@@ -1,15 +1,15 @@
 name: Build & Test
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/dependabot.yml"
-      - "**/README.md"
-  pull_request:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - "**/dependabot.yml"
+  #     - "**/README.md"
+  # pull_request:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 env:
