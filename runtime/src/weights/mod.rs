@@ -34,7 +34,7 @@ pub mod pallet_identity;
 // pub mod pallet_multisig;
 // pub mod pallet_nomination_pools;
 pub mod pallet_preimage;
-// pub mod pallet_proxy;
+pub mod pallet_proxy;
 pub mod pallet_scheduler;
 pub mod pallet_session;
 pub mod pallet_staking;

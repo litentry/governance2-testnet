@@ -6,7 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-// use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
@@ -60,7 +60,7 @@ pub use frame_support::{
 		IdentityFee, Weight,
 		ConstantMultiplier,
 	},
-	PalletId, StorageValue,
+	PalletId, StorageValue, RuntimeDebug,
 };
 
 use frame_election_provider_support::{onchain, SequentialPhragmen};
@@ -139,11 +139,11 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 103,
+	spec_version: 104,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 3,
-	state_version: 3,
+	transaction_version: 4,
+	state_version: 4,
 };
 
 /// This determines the average expected block time that we are targeting.
@@ -479,12 +479,53 @@ where
 	type OverarchingCall = RuntimeCall;
 }
 // DONE
+parameter_types! {
+	// // phase durations. 1/4 of the last session for each.
+	// // in testing: 1min or half of the session for each
+	// pub SignedPhase: u32 = prod_or_fast!(
+	// 	EPOCH_DURATION_IN_SLOTS / 4,
+	// 	(1 * MINUTES).min(EpochDuration::get().saturated_into::<u32>() / 2),
+	// 	"KSM_SIGNED_PHASE"
+	// );
+	// pub UnsignedPhase: u32 = prod_or_fast!(
+	// 	EPOCH_DURATION_IN_SLOTS / 4,
+	// 	(1 * MINUTES).min(EpochDuration::get().saturated_into::<u32>() / 2),
+	// 	"KSM_UNSIGNED_PHASE"
+	// );
+
+	// // signed config
+	// pub const SignedMaxSubmissions: u32 = 16;
+	// pub const SignedMaxRefunds: u32 = 16 / 4;
+	// pub const SignedDepositBase: Balance = deposit(2, 0);
+	// pub const SignedDepositByte: Balance = deposit(0, 10) / 1024;
+	// // Each good submission will get 1/10 KSM as reward
+	// pub SignedRewardBase: Balance =  UNITS / 10;
+	// pub BetterUnsignedThreshold: Perbill = Perbill::from_rational(5u32, 10_000);
+
+	// // 1 hour session, 15 minutes unsigned phase, 8 offchain executions.
+	// pub OffchainRepeat: BlockNumber = UnsignedPhase::get() / 8;
+
+	/// We take the top 12500 nominators as electing voters..
+	pub const MaxElectingVoters: u32 = 12_500;
+	/// ... and all of the validators as electable targets. Whilst this is the case, we cannot and
+	/// shall not increase the size of the validator intentions.
+	pub const MaxElectableTargets: u16 = u16::MAX;
+	// pub NposSolutionPriority: TransactionPriority =
+	// 	Perbill::from_percent(90) * TransactionPriority::max_value();
+	/// Setup election pallet to support maximum winners upto 2000. This will mean Staking Pallet
+	/// cannot have active validators higher than this count.
+	pub const MaxActiveValidators: u32 = 2000;
+}
+
 pub struct OnChainSeqPhragmen;
 impl onchain::Config for OnChainSeqPhragmen {
 	type System = Runtime;
 	type Solver = SequentialPhragmen<AccountId, runtime_common::elections::OnChainAccuracy>;
 	type DataProvider = Staking;
 	type WeightInfo = weights::frame_election_provider_support::WeightInfo<Runtime>;
+	type MaxWinners = MaxActiveValidators;
+	type VotersBound = MaxElectingVoters;
+	type TargetsBound = MaxElectableTargets;
 }
 
 // DONE
@@ -671,8 +712,11 @@ impl pallet_staking::Config for Runtime {
 	type UnixTime = Timestamp;
 	type CurrencyToVote = CurrencyToVote;
 	// (ksm) type ElectionProvider = ElectionProviderMultiPhase;
-	type ElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
-	type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	// type ElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	// type GenesisElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
+	type ElectionProvider = onchain::OnChainExecution<OnChainSeqPhragmen>;
+	type GenesisElectionProvider = onchain::OnChainExecution<OnChainSeqPhragmen>;
+
 	type RewardRemainder = Treasury;
 	type RuntimeEvent = RuntimeEvent;
 	type Slash = Treasury;
@@ -991,6 +1035,167 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
+parameter_types! {
+	// One storage item; key size 32, value size 8; .
+	pub const ProxyDepositBase: Balance = deposit(1, 8);
+	// Additional storage item size of 33 bytes.
+	pub const ProxyDepositFactor: Balance = deposit(0, 33);
+	pub const MaxProxies: u16 = 32;
+	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
+	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
+	pub const MaxPending: u16 = 32;
+}
+
+/// The type used to represent the kinds of proxying allowed.
+#[derive(
+	Copy,
+	Clone,
+	Eq,
+	PartialEq,
+	Ord,
+	PartialOrd,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	scale_info::TypeInfo,
+)]
+pub enum ProxyType {
+	Any,
+	// NonTransfer,
+	// Governance,
+	// Staking,
+	// IdentityJudgement,
+	// CancelProxy,
+	// Auction,
+	// Society,
+}
+
+impl InstanceFilter<RuntimeCall> for ProxyType {
+	fn filter(&self, c: &RuntimeCall) -> bool {
+		match self {
+			ProxyType::Any => true,
+			// ProxyType::NonTransfer => matches!(
+			// 	c,
+			// 	RuntimeCall::System(..) |
+			// 	RuntimeCall::Babe(..) |
+			// 	RuntimeCall::Timestamp(..) |
+			// 	RuntimeCall::Indices(pallet_indices::Call::claim {..}) |
+			// 	RuntimeCall::Indices(pallet_indices::Call::free {..}) |
+			// 	RuntimeCall::Indices(pallet_indices::Call::freeze {..}) |
+			// 	// Specifically omitting Indices `transfer`, `force_transfer`
+			// 	// Specifically omitting the entire Balances pallet
+			// 	RuntimeCall::Authorship(..) |
+			// 	RuntimeCall::Staking(..) |
+			// 	RuntimeCall::Session(..) |
+			// 	// RuntimeCall::Grandpa(..) |
+			// 	// RuntimeCall::ImOnline(..) |
+			// 	RuntimeCall::Democracy(..) |
+			// 	RuntimeCall::Council(..) |
+			// 	RuntimeCall::TechnicalCommittee(..) |
+			// 	RuntimeCall::PhragmenElection(..) |
+			// 	RuntimeCall::TechnicalMembership(..) |
+			// 	RuntimeCall::Treasury(..) |
+			// 	RuntimeCall::Bounties(..) |
+			// 	// RuntimeCall::ChildBounties(..) |
+			// 	RuntimeCall::Tips(..) |
+			// 	// RuntimeCall::Claims(..) |
+			// 	// RuntimeCall::Utility(..) |
+			// 	RuntimeCall::Identity(..) |
+			// 	RuntimeCall::Society(..) |
+			// 	// RuntimeCall::Recovery(pallet_recovery::Call::as_recovered {..}) |
+			// 	// RuntimeCall::Recovery(pallet_recovery::Call::vouch_recovery {..}) |
+			// 	// RuntimeCall::Recovery(pallet_recovery::Call::claim_recovery {..}) |
+			// 	// RuntimeCall::Recovery(pallet_recovery::Call::close_recovery {..}) |
+			// 	// RuntimeCall::Recovery(pallet_recovery::Call::remove_recovery {..}) |
+			// 	// RuntimeCall::Recovery(pallet_recovery::Call::cancel_recovered {..}) |
+			// 	// // Specifically omitting Recovery `create_recovery`, `initiate_recovery`
+			// 	// RuntimeCall::Vesting(pallet_vesting::Call::vest {..}) |
+			// 	// RuntimeCall::Vesting(pallet_vesting::Call::vest_other {..}) |
+			// 	// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
+			// 	RuntimeCall::Scheduler(..) |
+			// 	RuntimeCall::Proxy(..) |
+			// 	// RuntimeCall::Multisig(..) |
+			// 	// RuntimeCall::Gilt(..) |
+			// 	RuntimeCall::Registrar(paras_registrar::Call::register {..}) |
+			// 	RuntimeCall::Registrar(paras_registrar::Call::deregister {..}) |
+			// 	// Specifically omitting Registrar `swap`
+			// 	RuntimeCall::Registrar(paras_registrar::Call::reserve {..}) |
+			// 	RuntimeCall::Crowdloan(..) |
+			// 	RuntimeCall::Slots(..) |
+			// 	RuntimeCall::Auctions(..) | // Specifically omitting the entire XCM Pallet
+			// 	RuntimeCall::VoterList(..) |
+			// 	// RuntimeCall::NominationPools(..) |
+			// 	// RuntimeCall::FastUnstake(..)
+			// ),
+			// ProxyType::Governance =>
+			// 	matches!(
+			// 		c,
+			// 		RuntimeCall::Democracy(..) |
+			// 			RuntimeCall::Council(..) | RuntimeCall::TechnicalCommittee(..) |
+			// 			RuntimeCall::PhragmenElection(..) |
+			// 			RuntimeCall::Treasury(..) |
+			// 			RuntimeCall::Bounties(..) |
+			// 			RuntimeCall::Tips(..) | RuntimeCall::Utility(..) |
+			// 			RuntimeCall::ChildBounties(..)
+			// 	),
+			// ProxyType::Staking => {
+			// 	matches!(
+			// 		c,
+			// 		RuntimeCall::Staking(..) |
+			// 			RuntimeCall::Session(..) | RuntimeCall::Utility(..) |
+			// 			RuntimeCall::FastUnstake(..)
+			// 	)
+			// },
+			// ProxyType::IdentityJudgement => matches!(
+			// 	c,
+			// 	RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. }) |
+			// 		RuntimeCall::Utility(..)
+			// ),
+			// ProxyType::CancelProxy => {
+			// 	matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
+			// },
+			// ProxyType::Auction => matches!(
+			// 	c,
+			// 	RuntimeCall::Auctions(..) |
+			// 		RuntimeCall::Crowdloan(..) |
+			// 		RuntimeCall::Registrar(..) |
+			// 		RuntimeCall::Slots(..)
+			// ),
+			// ProxyType::Society => matches!(c, RuntimeCall::Society(..)),
+		}
+	}
+	fn is_superset(&self, o: &Self) -> bool {
+		match (self, o) {
+			(x, y) if x == y => true,
+			(ProxyType::Any, _) => true,
+			(_, ProxyType::Any) => false,
+			// (ProxyType::NonTransfer, _) => true,
+			_ => false,
+		}
+	}
+}
+
+impl Default for ProxyType {
+	fn default() -> Self {
+		Self::Any
+	}
+}
+impl pallet_proxy::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type ProxyType = ProxyType;
+	type ProxyDepositBase = ProxyDepositBase;
+	type ProxyDepositFactor = ProxyDepositFactor;
+	type MaxProxies = MaxProxies;
+	type WeightInfo = weights::pallet_proxy::WeightInfo<Runtime>;
+	type MaxPending = MaxPending;
+	type CallHasher = BlakeTwo256;
+	type AnnouncementDepositBase = AnnouncementDepositBase;
+	type AnnouncementDepositFactor = AnnouncementDepositFactor;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -1041,6 +1246,7 @@ construct_runtime!(
 		Utility: pallet_utility::{Pallet, Call, Event} = 24,
 		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 25,
 
+		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 30,
 		// Parachains pallets. Start indices at 50 to leave room.
 		ParachainsOrigin: parachains_origin::{Pallet, Origin} = 50,
 		Configuration: parachains_configuration::{Pallet, Call, Storage, Config<T>} = 51,
