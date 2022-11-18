@@ -1062,107 +1062,13 @@ parameter_types! {
 )]
 pub enum ProxyType {
 	Any,
-	// NonTransfer,
-	// Governance,
-	// Staking,
-	// IdentityJudgement,
-	// CancelProxy,
-	// Auction,
-	// Society,
 }
 
 impl InstanceFilter<RuntimeCall> for ProxyType {
 	fn filter(&self, c: &RuntimeCall) -> bool {
 		match self {
 			ProxyType::Any => true,
-			// ProxyType::NonTransfer => matches!(
-			// 	c,
-			// 	RuntimeCall::System(..) |
-			// 	RuntimeCall::Babe(..) |
-			// 	RuntimeCall::Timestamp(..) |
-			// 	RuntimeCall::Indices(pallet_indices::Call::claim {..}) |
-			// 	RuntimeCall::Indices(pallet_indices::Call::free {..}) |
-			// 	RuntimeCall::Indices(pallet_indices::Call::freeze {..}) |
-			// 	// Specifically omitting Indices `transfer`, `force_transfer`
-			// 	// Specifically omitting the entire Balances pallet
-			// 	RuntimeCall::Authorship(..) |
-			// 	RuntimeCall::Staking(..) |
-			// 	RuntimeCall::Session(..) |
-			// 	// RuntimeCall::Grandpa(..) |
-			// 	// RuntimeCall::ImOnline(..) |
-			// 	RuntimeCall::Democracy(..) |
-			// 	RuntimeCall::Council(..) |
-			// 	RuntimeCall::TechnicalCommittee(..) |
-			// 	RuntimeCall::PhragmenElection(..) |
-			// 	RuntimeCall::TechnicalMembership(..) |
-			// 	RuntimeCall::Treasury(..) |
-			// 	RuntimeCall::Bounties(..) |
-			// 	// RuntimeCall::ChildBounties(..) |
-			// 	RuntimeCall::Tips(..) |
-			// 	// RuntimeCall::Claims(..) |
-			// 	// RuntimeCall::Utility(..) |
-			// 	RuntimeCall::Identity(..) |
-			// 	RuntimeCall::Society(..) |
-			// 	// RuntimeCall::Recovery(pallet_recovery::Call::as_recovered {..}) |
-			// 	// RuntimeCall::Recovery(pallet_recovery::Call::vouch_recovery {..}) |
-			// 	// RuntimeCall::Recovery(pallet_recovery::Call::claim_recovery {..}) |
-			// 	// RuntimeCall::Recovery(pallet_recovery::Call::close_recovery {..}) |
-			// 	// RuntimeCall::Recovery(pallet_recovery::Call::remove_recovery {..}) |
-			// 	// RuntimeCall::Recovery(pallet_recovery::Call::cancel_recovered {..}) |
-			// 	// // Specifically omitting Recovery `create_recovery`, `initiate_recovery`
-			// 	// RuntimeCall::Vesting(pallet_vesting::Call::vest {..}) |
-			// 	// RuntimeCall::Vesting(pallet_vesting::Call::vest_other {..}) |
-			// 	// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
-			// 	RuntimeCall::Scheduler(..) |
-			// 	RuntimeCall::Proxy(..) |
-			// 	// RuntimeCall::Multisig(..) |
-			// 	// RuntimeCall::Gilt(..) |
-			// 	RuntimeCall::Registrar(paras_registrar::Call::register {..}) |
-			// 	RuntimeCall::Registrar(paras_registrar::Call::deregister {..}) |
-			// 	// Specifically omitting Registrar `swap`
-			// 	RuntimeCall::Registrar(paras_registrar::Call::reserve {..}) |
-			// 	RuntimeCall::Crowdloan(..) |
-			// 	RuntimeCall::Slots(..) |
-			// 	RuntimeCall::Auctions(..) | // Specifically omitting the entire XCM Pallet
-			// 	RuntimeCall::VoterList(..) |
-			// 	// RuntimeCall::NominationPools(..) |
-			// 	// RuntimeCall::FastUnstake(..)
-			// ),
-			// ProxyType::Governance =>
-			// 	matches!(
-			// 		c,
-			// 		RuntimeCall::Democracy(..) |
-			// 			RuntimeCall::Council(..) | RuntimeCall::TechnicalCommittee(..) |
-			// 			RuntimeCall::PhragmenElection(..) |
-			// 			RuntimeCall::Treasury(..) |
-			// 			RuntimeCall::Bounties(..) |
-			// 			RuntimeCall::Tips(..) | RuntimeCall::Utility(..) |
-			// 			RuntimeCall::ChildBounties(..)
-			// 	),
-			// ProxyType::Staking => {
-			// 	matches!(
-			// 		c,
-			// 		RuntimeCall::Staking(..) |
-			// 			RuntimeCall::Session(..) | RuntimeCall::Utility(..) |
-			// 			RuntimeCall::FastUnstake(..)
-			// 	)
-			// },
-			// ProxyType::IdentityJudgement => matches!(
-			// 	c,
-			// 	RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. }) |
-			// 		RuntimeCall::Utility(..)
-			// ),
-			// ProxyType::CancelProxy => {
-			// 	matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
-			// },
-			// ProxyType::Auction => matches!(
-			// 	c,
-			// 	RuntimeCall::Auctions(..) |
-			// 		RuntimeCall::Crowdloan(..) |
-			// 		RuntimeCall::Registrar(..) |
-			// 		RuntimeCall::Slots(..)
-			// ),
-			// ProxyType::Society => matches!(c, RuntimeCall::Society(..)),
+
 		}
 	}
 	fn is_superset(&self, o: &Self) -> bool {
@@ -1170,7 +1076,6 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 			(x, y) if x == y => true,
 			(ProxyType::Any, _) => true,
 			(_, ProxyType::Any) => false,
-			// (ProxyType::NonTransfer, _) => true,
 			_ => false,
 		}
 	}
