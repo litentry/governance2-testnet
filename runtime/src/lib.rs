@@ -139,11 +139,11 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 104,
-	impl_version: 1,
+	spec_version: 105,
+	impl_version: 2,
 	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 4,
-	state_version: 4,
+	transaction_version: 5,
+	state_version: 5,
 };
 
 /// This determines the average expected block time that we are targeting.
@@ -622,8 +622,10 @@ impl pallet_identity::Config for Runtime {
 	type MaxAdditionalFields = MaxAdditionalFields;
 	type MaxRegistrars = MaxRegistrars;
 	type Slashed = Treasury;
-	type ForceOrigin = GeneralAdmin;
-	type RegistrarOrigin = GeneralAdmin;
+	// type ForceOrigin = GeneralAdmin;
+	// type RegistrarOrigin = GeneralAdmin;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type RegistrarOrigin = EnsureRoot<AccountId>;
 	type WeightInfo = weights::pallet_identity::WeightInfo<Runtime>;
 }
 
